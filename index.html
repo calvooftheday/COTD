@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,6 +111,96 @@
       color: var(--ink);
       line-height: 1;
       text-align: center;
+    }
+
+    #secretO {
+      cursor: default;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    /* ── CALVO MODE ── */
+    body.calvo-mode #secretO {
+      color: var(--ink);
+    }
+
+    .calvo-mode-banner {
+      display: none;
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--gold-light);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid var(--gold);
+      z-index: 998;
+      white-space: nowrap;
+      animation: fadeSlide 0.3s ease both;
+    }
+
+    body.calvo-mode .calvo-mode-banner { display: block; }
+
+    /* ── LIKES ── */
+    .vote-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .vote-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 0.3rem 0.75rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.18s;
+    }
+
+    .vote-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+    .vote-btn.active-like {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--ink);
+    }
+
+    .vote-btn.active-dislike {
+      background: var(--rust);
+      border-color: var(--rust);
+      color: var(--cream);
+    }
+
+    .vote-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .vote-divider {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--border);
+    }
+
+    /* modal vote bar */
+    .modal-vote-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
     }
 
     .site-title span {
@@ -837,6 +928,138 @@
 
     .calvo-modal-close:hover { background: var(--rust); }
 
+    /* ── ANNOUNCEMENT BAR ── */
+    .announcement-bar {
+      display: none;
+      background: var(--ink);
+      color: var(--gold-light);
+      text-align: center;
+      padding: 0.55rem 3rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--gold);
+      position: relative;
+      animation: fadeSlide 0.4s ease both;
+    }
+
+    .announcement-bar.visible { display: block; }
+
+    .announcement-bar strong {
+      color: var(--rust-light);
+      margin-right: 0.5em;
+    }
+
+    /* ── FLOATING ANNOUNCEMENT BUTTON ── */
+    .fab-announce {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--ink);
+      color: var(--tan);
+      border: 1px dashed var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      border-radius: 2px;
+      z-index: 200;
+      transition: all 0.2s;
+      display: none;
+    }
+
+    .fab-announce:hover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+    }
+
+    .fab-announce.authed { display: block; }
+
+    /* ── ANNOUNCEMENT MODAL ── */
+    .ann-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26,18,9,0.75);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .ann-overlay.open { display: flex; }
+
+    .ann-modal {
+      background: var(--ink);
+      border: 2px solid var(--gold);
+      box-shadow: 8px 8px 0 var(--rust);
+      padding: 2.5rem 2.5rem 2rem;
+      width: 100%;
+      max-width: 440px;
+      animation: fadeSlide 0.25s ease both;
+    }
+
+    .ann-modal h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--gold-light);
+      margin-bottom: 0.4rem;
+    }
+
+    .ann-modal p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .ann-textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      padding: 0.7rem 0.9rem;
+      border-radius: 2px;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s;
+      margin-bottom: 1.2rem;
+      min-height: 90px;
+    }
+
+    .ann-textarea:focus { border-color: var(--gold-light); }
+
+    .ann-actions {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-danger {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: none;
+      color: var(--rust-light);
+      border: 1px solid var(--rust);
+      padding: 0.65rem 1.2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover { background: var(--rust); color: var(--cream); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .hero { grid-template-columns: 1fr; }
@@ -853,6 +1076,11 @@
 </head>
 <body>
 
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar" id="announcementBar">
+  <strong>📢 Announcement:</strong><span id="announcementText"></span>
+</div>
+
 <header>
   <div class="header-top">
     <span class="header-date" id="header-date"></span>
@@ -864,7 +1092,7 @@
   </div>
   <div class="header-main">
     <div>
-      <div class="site-title">C<span>O</span>TD</div>
+      <div class="site-title">C<span id="secretO" onclick="toggleCalvoMode()">O</span>TD</div>
       <div class="site-subtitle" data-i18n="tagline">Calvo of the Day</div>
     </div>
     <div class="admin-toggle-wrap">
@@ -872,6 +1100,8 @@
     </div>
   </div>
 </header>
+
+<div class="calvo-mode-banner">🥚 calvo mode active — click the egg to disable</div>
 
 <!-- PASSWORD MODAL -->
 <div class="pw-overlay" id="pwOverlay" onclick="if(event.target===this)closePwModal()">
@@ -901,6 +1131,11 @@
       <div class="calvo-modal-name" id="calvoModalName"></div>
       <div class="calvo-modal-issue" id="calvoModalIssue"></div>
       <div class="calvo-modal-desc" id="calvoModalDesc"></div>
+      <div class="modal-vote-bar" id="modalVoteBar">
+        <button class="vote-btn" id="modalLikeBtn" onclick="vote(window._currentModalKey,'like')">👍 <span id="modalLikeCount">0</span></button>
+        <span class="vote-divider">·</span>
+        <button class="vote-btn" id="modalDislikeBtn" onclick="vote(window._currentModalKey,'dislike')">👎 <span id="modalDislikeCount">0</span></button>
+      </div>
     </div>
   </div>
 </div>
@@ -968,6 +1203,11 @@
           <button class="share-btn" title="Share" onclick="shareNative()">↗</button>
         </div>
       </div>
+      <div class="vote-bar" id="heroVoteBar">
+        <button class="vote-btn" id="heroLikeBtn" onclick="vote('today','like')">👍 <span id="heroLikeCount">0</span></button>
+        <span class="vote-divider">·</span>
+        <button class="vote-btn" id="heroDislikeBtn" onclick="vote('today','dislike')">👎 <span id="heroDislikeCount">0</span></button>
+      </div>
     </div>
   </div>
 
@@ -1008,6 +1248,23 @@
   <div class="footer-title">Calvo of the Day</div>
   <p data-i18n="footerCredit">Est. today · Every scalp tells a story · COTD</p>
 </footer>
+
+<!-- FLOATING ANNOUNCEMENT BUTTON (visible only when authed) -->
+<button class="fab-announce" id="fabAnnounce" onclick="openAnnModal()">📢 Announcement</button>
+
+<!-- ANNOUNCEMENT MODAL -->
+<div class="ann-overlay" id="annOverlay" onclick="if(event.target===this)closeAnnModal()">
+  <div class="ann-modal">
+    <h3>📢 Announcement</h3>
+    <p>Post a message at the top of the page for all visitors</p>
+    <textarea class="ann-textarea" id="annTextarea" placeholder="Write your announcement here…" maxlength="200"></textarea>
+    <div class="ann-actions">
+      <button class="btn-primary" onclick="saveAnnouncement()">Post</button>
+      <button class="btn-danger" onclick="clearAnnouncement()">Clear</button>
+      <button class="btn-secondary" onclick="closeAnnModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
   // ── FIREBASE ───────────────────────────────────────────────
@@ -1203,6 +1460,7 @@
     const val = document.getElementById('pwInput').value;
     if (val === ADMIN_PASSWORD) {
       adminAuthed = true;
+      document.getElementById('fabAnnounce').classList.add('authed');
       closePwModal();
       openAdminPanel();
     } else {
@@ -1286,6 +1544,163 @@
     setTimeout(() => toggleAdmin(), 1200);
   }
 
+  // ── CALVO MODE ─────────────────────────────────────────────
+  let calvoModeOn = false;
+
+  // Elements and their original text to restore
+  const calvoOriginals = new Map();
+
+  function calvoifyText(text, protectedWord) {
+    // Replace every word that isn't the protected calvo name with "calvo"
+    // Keep punctuation, numbers, emojis intact as separators
+    return text.replace(/\b[a-záéíóúàèìòùüñçA-ZÁÉÍÓÚÀÈÌÒÙÜÑÇ]+\b/g, (word) => {
+      if (protectedWord && word.toLowerCase() === protectedWord.toLowerCase()) return word;
+      // keep short connectors to avoid total unreadability... just kidding, all calvo
+      return 'calvo';
+    });
+  }
+
+  function toggleCalvoMode() {
+    calvoModeOn = !calvoModeOn;
+    const oEl = document.getElementById('secretO');
+
+    if (calvoModeOn) {
+      oEl.textContent = '🥚';
+      document.body.classList.add('calvo-mode');
+      applyCalvoText();
+    } else {
+      oEl.textContent = 'O';
+      document.body.classList.remove('calvo-mode');
+      restoreCalvoText();
+    }
+  }
+
+  function applyCalvoText() {
+    // Get current COTD name to protect it
+    const protectedName = (document.getElementById('heroName').textContent || '').trim();
+
+    // All text-bearing elements except inputs, scripts, the COTD name itself, and vote counts
+    const selectors = [
+      '.site-subtitle', '.header-date', '.cotd-label', '.cotd-description',
+      '.hero-badge', '.section-eyebrow', '.about-block h2', '.about-block p',
+      '.stat-list li span:not(.stat-num)', '.archive-header span',
+      '.archive-card-name', '.archive-card-date',
+      'footer .footer-title', 'footer p',
+      '.cotd-name' // we'll skip this one below
+    ];
+
+    document.querySelectorAll(selectors.join(',')).forEach(el => {
+      // skip the actual COTD name element
+      if (el.id === 'heroName') return;
+      // skip elements with child elements (only do leaf text nodes)
+      if (el.children.length > 0) return;
+      if (!calvoOriginals.has(el)) calvoOriginals.set(el, el.textContent);
+      el.textContent = calvoifyText(el.textContent, protectedName);
+    });
+
+    // admin toggle label
+    const adminToggle = document.querySelector('.admin-toggle');
+    if (adminToggle) {
+      if (!calvoOriginals.has(adminToggle)) calvoOriginals.set(adminToggle, adminToggle.textContent);
+      adminToggle.textContent = '🥚 calvo';
+    }
+  }
+
+  function restoreCalvoText() {
+    calvoOriginals.forEach((original, el) => {
+      el.textContent = original;
+    });
+    calvoOriginals.clear();
+    // Re-apply translations to restore properly
+    applyTranslations();
+    renderHero();
+  }
+
+  // ── VOTING ─────────────────────────────────────────────────
+  // User identity: persist a random ID in localStorage
+  function getUserId() {
+    let uid = localStorage.getItem('cotd_uid');
+    if (!uid) { uid = 'u_' + Math.random().toString(36).slice(2, 10); localStorage.setItem('cotd_uid', uid); }
+    return uid;
+  }
+
+  async function loadVotes(key) {
+    try {
+      const snap = await getDoc(doc(db, 'votes', key));
+      return snap.exists() ? snap.data() : { likes: 0, dislikes: 0, voters: {} };
+    } catch (e) { return { likes: 0, dislikes: 0, voters: {} }; }
+  }
+
+  async function vote(key, type) {
+    if (!key || key === 'today') {
+      // get today's real key from state
+      const s = await loadState();
+      if (!s.date) return;
+      key = s.date.replace(/[:.]/g, '-');
+    }
+    const uid = getUserId();
+    const data = await loadVotes(key);
+    const prev = (data.voters || {})[uid];
+
+    if (prev === type) return; // already voted same way, do nothing
+
+    // Remove previous vote if exists
+    if (prev === 'like') data.likes = Math.max(0, (data.likes || 0) - 1);
+    if (prev === 'dislike') data.dislikes = Math.max(0, (data.dislikes || 0) - 1);
+
+    // Add new vote
+    if (type === 'like') data.likes = (data.likes || 0) + 1;
+    if (type === 'dislike') data.dislikes = (data.dislikes || 0) + 1;
+    data.voters = data.voters || {};
+    data.voters[uid] = type;
+
+    await setDoc(doc(db, 'votes', key), data);
+
+    // Refresh UI
+    if (document.getElementById('calvoOverlay').classList.contains('open') && window._currentModalKey === key) {
+      renderModalVotes(key);
+    }
+    renderHeroVotes();
+  }
+
+  async function renderHeroVotes() {
+    const s = await loadState();
+    const key = s.date ? s.date.replace(/[:.]/g, '-') : null;
+    if (!key) return;
+    const data = await loadVotes(key);
+    const uid = getUserId();
+    const userVote = (data.voters || {})[uid];
+
+    document.getElementById('heroLikeCount').textContent = data.likes || 0;
+    document.getElementById('heroDislikeCount').textContent = data.dislikes || 0;
+
+    const likeBtn = document.getElementById('heroLikeBtn');
+    const dislikeBtn = document.getElementById('heroDislikeBtn');
+    likeBtn.classList.toggle('active-like', userVote === 'like');
+    dislikeBtn.classList.toggle('active-dislike', userVote === 'dislike');
+
+    // store key for onclick
+    likeBtn.onclick = () => vote(key, 'like');
+    dislikeBtn.onclick = () => vote(key, 'dislike');
+  }
+
+  async function renderModalVotes(key) {
+    const data = await loadVotes(key);
+    const uid = getUserId();
+    const userVote = (data.voters || {})[uid];
+
+    document.getElementById('modalLikeCount').textContent = data.likes || 0;
+    document.getElementById('modalDislikeCount').textContent = data.dislikes || 0;
+
+    const likeBtn = document.getElementById('modalLikeBtn');
+    const dislikeBtn = document.getElementById('modalDislikeBtn');
+    likeBtn.classList.toggle('active-like', userVote === 'like');
+    dislikeBtn.classList.toggle('active-dislike', userVote === 'dislike');
+
+    likeBtn.onclick = () => vote(key, 'like');
+    dislikeBtn.onclick = () => vote(key, 'dislike');
+  }
+
   // ── RENDER ─────────────────────────────────────────────────
   async function renderHero() {
     const s = await loadState();
@@ -1312,6 +1727,8 @@
       imgEl.style.display = 'none';
       phEl.style.display = 'flex';
     }
+
+    renderHeroVotes();
   }
 
   async function renderArchive() {
@@ -1365,6 +1782,11 @@
       ph.style.display = 'flex';
     }
 
+    // Store the vote key for this entry
+    const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+    window._currentModalKey = key;
+    if (key) renderModalVotes(key);
+
     document.getElementById('calvoOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -1399,6 +1821,54 @@
     } else copyLink();
   }
 
+  // ── ANNOUNCEMENTS ──────────────────────────────────────────
+  async function loadAnnouncement() {
+    try {
+      const snap = await getDoc(doc(db, 'cotd', 'announcement'));
+      return snap.exists() ? snap.data() : {};
+    } catch (e) { return {}; }
+  }
+
+  async function renderAnnouncement() {
+    const data = await loadAnnouncement();
+    const bar = document.getElementById('announcementBar');
+    const textEl = document.getElementById('announcementText');
+    if (data.text && data.text.trim()) {
+      textEl.textContent = data.text.trim();
+      bar.classList.add('visible');
+    } else {
+      bar.classList.remove('visible');
+      textEl.textContent = '';
+    }
+  }
+
+  function openAnnModal() {
+    loadAnnouncement().then(data => {
+      document.getElementById('annTextarea').value = data.text || '';
+    });
+    document.getElementById('annOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('annTextarea').focus(), 50);
+  }
+
+  function closeAnnModal() {
+    document.getElementById('annOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function saveAnnouncement() {
+    const text = document.getElementById('annTextarea').value.trim();
+    await setDoc(doc(db, 'cotd', 'announcement'), { text });
+    await renderAnnouncement();
+    closeAnnModal();
+  }
+
+  async function clearAnnouncement() {
+    await setDoc(doc(db, 'cotd', 'announcement'), { text: '' });
+    await renderAnnouncement();
+    closeAnnModal();
+  }
+
   // ── INIT ──────────────────────────────────────────────────
   // Expose globals needed by inline onclick handlers
   window.toggleAdmin   = toggleAdmin;
@@ -1409,6 +1879,12 @@
   window.shareNative   = shareNative;
   window.openCalvoModal  = openCalvoModal;
   window.closeCalvoModal = closeCalvoModal;
+  window.toggleCalvoMode = toggleCalvoMode;
+  window.vote = vote;
+  window.openAnnModal    = openAnnModal;
+  window.closeAnnModal   = closeAnnModal;
+  window.saveAnnouncement  = saveAnnouncement;
+  window.clearAnnouncement = clearAnnouncement;
   window.setLang = function(lang) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -1423,10 +1899,14 @@
   await renderHero();
   await renderArchive();
   await updateStatCount();
+  await renderAnnouncement();
 
   // Close calvo modal on ESC
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeCalvoModal();
+    if (e.key === 'Escape') {
+      closeCalvoModal();
+      closeAnnModal();
+    }
   });
 </script>
 </body>
