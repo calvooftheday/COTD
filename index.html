@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,63 +144,202 @@
 
     body.calvo-mode .calvo-mode-banner { display: block; }
 
-    /* ── LIKES ── */
-    .vote-bar {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
+    /* ── SHINE RATING ── */
+    .shine-bar {
       margin-top: 1.2rem;
       padding-top: 1rem;
       border-top: 1px solid var(--border);
     }
 
-    .vote-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: none;
-      border: 1px solid var(--border);
+    .shine-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
       color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      padding: 0.3rem 0.75rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.18s;
+      margin-bottom: 0.45rem;
     }
 
-    .vote-btn:hover { border-color: var(--ink); color: var(--ink); }
-
-    .vote-btn.active-like {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: var(--ink);
-    }
-
-    .vote-btn.active-dislike {
-      background: var(--rust);
-      border-color: var(--rust);
-      color: var(--cream);
-    }
-
-    .vote-btn:disabled { opacity: 0.5; cursor: default; }
-
-    .vote-divider {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      color: var(--border);
-    }
-
-    /* modal vote bar */
-    .modal-vote-bar {
+    .shine-stars {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.15rem;
+    }
+
+    .shine-star {
+      font-size: 1.35rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.12s ease;
+      filter: grayscale(1) opacity(0.3);
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .shine-star:hover, .shine-star.lit { filter: none; transform: scale(1.15); }
+    .shine-star.user-pick { filter: none; transform: scale(1.2); animation: starPop 0.25s ease both; }
+
+    @keyframes starPop {
+      0%   { transform: scale(1.5); }
+      100% { transform: scale(1.2); }
+    }
+
+    .shine-avg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-left: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-shine-bar {
       margin-top: 1.5rem;
       padding-top: 1rem;
       border-top: 1px solid var(--border);
     }
+
+    /* ── HALL OF FAME ── */
+    .hof-section {
+      margin-top: 2rem;
+      border: 2px solid var(--ink);
+      background: var(--warm-white);
+      box-shadow: 4px 4px 0 var(--gold);
+      animation: fadeSlide 0.7s 0.3s ease both;
+    }
+
+    .hof-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid var(--ink);
+      background: var(--gold);
+    }
+
+    .hof-header span:first-child {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .hof-header span:last-child {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink);
+      opacity: 0.7;
+    }
+
+    .hof-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .hof-card {
+      padding: 1.2rem;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      user-select: none;
+    }
+
+    .hof-card:last-child { border-right: none; }
+    .hof-card:hover { background: var(--tan-light); }
+
+    .hof-rank {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .hof-rank.rank-1 { color: #c9a84c; }
+    .hof-rank.rank-2 { color: #8a8a8a; }
+    .hof-rank.rank-3 { color: #a0674a; }
+    .hof-rank.rank-4, .hof-rank.rank-5 { color: var(--muted); }
+
+    .hof-card-img {
+      aspect-ratio: 1;
+      background: var(--tan-light);
+      border: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .hof-card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hof-card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hof-card-score {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .hof-empty {
+      padding: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      grid-column: 1 / -1;
+    }
+
+    /* ── KONAMI GOLDEN GLOW ── */
+    .konami-flash {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 990;
+      animation: konamiFlash 5s ease forwards;
+    }
+
+    .konami-flash.active { display: block; }
+
+    @keyframes konamiFlash {
+      0%   { opacity: 0; }
+      8%   { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    body.konami-mode {
+      transition: filter 0.3s ease;
+      filter: sepia(0.6) saturate(3) hue-rotate(5deg) brightness(1.1);
+    }
+
+    /* ── HIDDEN VISIT COUNTER ── */
+    .secret-counter {
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      color: var(--tan);
+      margin-top: 0.4rem;
+      cursor: default;
+    }
+
+    .secret-counter.revealed { opacity: 1; }
 
     .site-title span {
       color: var(--rust);
@@ -1068,6 +1206,8 @@
       .about-block + .about-block { border-left: none; border-top: 2px solid var(--ink); }
       .archive-cards { grid-template-columns: repeat(3, 1fr); }
       .archive-card:nth-child(n+4) { display: none; }
+      .hof-cards { grid-template-columns: repeat(3, 1fr); }
+      .hof-card:nth-child(n+4) { display: none; }
       .admin-grid { grid-template-columns: 1fr; }
       .header-main { flex-direction: column; gap: 0.2rem; }
       .admin-toggle-wrap { position: static; margin-top: 0.5rem; }
@@ -1131,10 +1271,16 @@
       <div class="calvo-modal-name" id="calvoModalName"></div>
       <div class="calvo-modal-issue" id="calvoModalIssue"></div>
       <div class="calvo-modal-desc" id="calvoModalDesc"></div>
-      <div class="modal-vote-bar" id="modalVoteBar">
-        <button class="vote-btn" id="modalLikeBtn" onclick="vote(window._currentModalKey,'like')">👍 <span id="modalLikeCount">0</span></button>
-        <span class="vote-divider">·</span>
-        <button class="vote-btn" id="modalDislikeBtn" onclick="vote(window._currentModalKey,'dislike')">👎 <span id="modalDislikeCount">0</span></button>
+      <div class="modal-shine-bar" id="modalShineBar">
+        <div class="shine-label">Shine Rating</div>
+        <div class="shine-stars" id="modalShineStars">
+          <button class="shine-star" data-v="1" onclick="rate(window._currentModalKey,1)">🔆</button>
+          <button class="shine-star" data-v="2" onclick="rate(window._currentModalKey,2)">🔆</button>
+          <button class="shine-star" data-v="3" onclick="rate(window._currentModalKey,3)">🔆</button>
+          <button class="shine-star" data-v="4" onclick="rate(window._currentModalKey,4)">🔆</button>
+          <button class="shine-star" data-v="5" onclick="rate(window._currentModalKey,5)">🔆</button>
+          <span class="shine-avg" id="modalShineAvg"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -1203,10 +1349,16 @@
           <button class="share-btn" title="Share" onclick="shareNative()">↗</button>
         </div>
       </div>
-      <div class="vote-bar" id="heroVoteBar">
-        <button class="vote-btn" id="heroLikeBtn" onclick="vote('today','like')">👍 <span id="heroLikeCount">0</span></button>
-        <span class="vote-divider">·</span>
-        <button class="vote-btn" id="heroDislikeBtn" onclick="vote('today','dislike')">👎 <span id="heroDislikeCount">0</span></button>
+      <div class="shine-bar" id="heroShineBar">
+        <div class="shine-label">Shine Rating</div>
+        <div class="shine-stars" id="heroShineStars">
+          <button class="shine-star" data-v="1" onclick="rate(null,1)">🔆</button>
+          <button class="shine-star" data-v="2" onclick="rate(null,2)">🔆</button>
+          <button class="shine-star" data-v="3" onclick="rate(null,3)">🔆</button>
+          <button class="shine-star" data-v="4" onclick="rate(null,4)">🔆</button>
+          <button class="shine-star" data-v="5" onclick="rate(null,5)">🔆</button>
+          <span class="shine-avg" id="heroShineAvg"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -1241,12 +1393,26 @@
       <!-- filled by JS -->
     </div>
   </div>
+  <!-- HALL OF FAME -->
+  <div class="hof-section">
+    <div class="hof-header">
+      <span>🏆 Hall of Fame</span>
+      <span>Top 5 · Avg Shine Rating</span>
+    </div>
+    <div class="hof-cards" id="hofCards">
+      <!-- filled by JS -->
+    </div>
+  </div>
 
 </main>
 
-<footer>
+<!-- KONAMI FLASH -->
+<div class="konami-flash" id="konamiFlash"></div>
+
+<footer id="siteFooter">
   <div class="footer-title">Calvo of the Day</div>
   <p data-i18n="footerCredit">Est. today · Every scalp tells a story · COTD</p>
+  <p class="secret-counter" id="secretCounter"></p>
 </footer>
 
 <!-- FLOATING ANNOUNCEMENT BUTTON (visible only when authed) -->
@@ -1616,90 +1782,275 @@
     renderHero();
   }
 
-  // ── VOTING ─────────────────────────────────────────────────
-  // User identity: persist a random ID in localStorage
+  // ── SHINE RATING ───────────────────────────────────────────
   function getUserId() {
     let uid = localStorage.getItem('cotd_uid');
     if (!uid) { uid = 'u_' + Math.random().toString(36).slice(2, 10); localStorage.setItem('cotd_uid', uid); }
     return uid;
   }
 
-  async function loadVotes(key) {
+  async function loadRatings(key) {
     try {
-      const snap = await getDoc(doc(db, 'votes', key));
-      return snap.exists() ? snap.data() : { likes: 0, dislikes: 0, voters: {} };
-    } catch (e) { return { likes: 0, dislikes: 0, voters: {} }; }
+      const snap = await getDoc(doc(db, 'ratings', key));
+      return snap.exists() ? snap.data() : { total: 0, count: 0, voters: {} };
+    } catch (e) { return { total: 0, count: 0, voters: {} }; }
   }
 
-  async function vote(key, type) {
-    if (!key || key === 'today') {
-      // get today's real key from state
+  async function rate(key, value) {
+    // resolve key from current state if null (hero card)
+    if (!key) {
       const s = await loadState();
       if (!s.date) return;
       key = s.date.replace(/[:.]/g, '-');
     }
     const uid = getUserId();
-    const data = await loadVotes(key);
+    const data = await loadRatings(key);
     const prev = (data.voters || {})[uid];
 
-    if (prev === type) return; // already voted same way, do nothing
+    if (prev === value) return; // same rating, ignore
 
-    // Remove previous vote if exists
-    if (prev === 'like') data.likes = Math.max(0, (data.likes || 0) - 1);
-    if (prev === 'dislike') data.dislikes = Math.max(0, (data.dislikes || 0) - 1);
-
-    // Add new vote
-    if (type === 'like') data.likes = (data.likes || 0) + 1;
-    if (type === 'dislike') data.dislikes = (data.dislikes || 0) + 1;
+    // Adjust totals
+    if (prev) data.total = (data.total || 0) - prev;
+    if (prev) data.count = Math.max(0, (data.count || 0) - 1);
+    data.total = (data.total || 0) + value;
+    data.count = (data.count || 0) + 1;
     data.voters = data.voters || {};
-    data.voters[uid] = type;
+    data.voters[uid] = value;
 
-    await setDoc(doc(db, 'votes', key), data);
+    await setDoc(doc(db, 'ratings', key), data);
 
-    // Refresh UI
-    if (document.getElementById('calvoOverlay').classList.contains('open') && window._currentModalKey === key) {
-      renderModalVotes(key);
+    // Refresh whichever UI is visible
+    const inModal = document.getElementById('calvoOverlay').classList.contains('open') && window._currentModalKey === key;
+    if (inModal) renderShineBar('modal', key);
+    else renderShineBar('hero', key);
+
+    // Refresh hall of fame
+    renderHallOfFame();
+  }
+
+  function renderStars(container, avgId, userRating, avg, count, key, context) {
+    const stars = container.querySelectorAll('.shine-star');
+    stars.forEach(s => {
+      const v = parseInt(s.getAttribute('data-v'));
+      s.classList.toggle('lit', v <= Math.round(avg));
+      s.classList.toggle('user-pick', v === userRating);
+      s.onclick = () => rate(context === 'hero' ? null : key, v);
+    });
+    const avgEl = document.getElementById(context === 'hero' ? 'heroShineAvg' : 'modalShineAvg');
+    if (avgEl) {
+      avgEl.textContent = count > 0
+        ? `${avg.toFixed(1)} / 5  (${count} ${count === 1 ? 'rating' : 'ratings'})`
+        : 'No ratings yet';
     }
-    renderHeroVotes();
   }
 
-  async function renderHeroVotes() {
-    const s = await loadState();
-    const key = s.date ? s.date.replace(/[:.]/g, '-') : null;
-    if (!key) return;
-    const data = await loadVotes(key);
+  async function renderShineBar(context, key) {
+    if (!key) {
+      const s = await loadState();
+      if (!s.date) return;
+      key = s.date.replace(/[:.]/g, '-');
+    }
+    const data = await loadRatings(key);
     const uid = getUserId();
-    const userVote = (data.voters || {})[uid];
-
-    document.getElementById('heroLikeCount').textContent = data.likes || 0;
-    document.getElementById('heroDislikeCount').textContent = data.dislikes || 0;
-
-    const likeBtn = document.getElementById('heroLikeBtn');
-    const dislikeBtn = document.getElementById('heroDislikeBtn');
-    likeBtn.classList.toggle('active-like', userVote === 'like');
-    dislikeBtn.classList.toggle('active-dislike', userVote === 'dislike');
-
-    // store key for onclick
-    likeBtn.onclick = () => vote(key, 'like');
-    dislikeBtn.onclick = () => vote(key, 'dislike');
+    const userRating = (data.voters || {})[uid] || 0;
+    const avg = data.count > 0 ? data.total / data.count : 0;
+    const containerId = context === 'hero' ? 'heroShineStars' : 'modalShineStars';
+    const container = document.getElementById(containerId);
+    if (container) renderStars(container, context === 'hero' ? 'heroShineAvg' : 'modalShineAvg', userRating, avg, data.count || 0, key, context);
   }
 
-  async function renderModalVotes(key) {
-    const data = await loadVotes(key);
-    const uid = getUserId();
-    const userVote = (data.voters || {})[uid];
-
-    document.getElementById('modalLikeCount').textContent = data.likes || 0;
-    document.getElementById('modalDislikeCount').textContent = data.dislikes || 0;
-
-    const likeBtn = document.getElementById('modalLikeBtn');
-    const dislikeBtn = document.getElementById('modalDislikeBtn');
-    likeBtn.classList.toggle('active-like', userVote === 'like');
-    dislikeBtn.classList.toggle('active-dislike', userVote === 'dislike');
-
-    likeBtn.onclick = () => vote(key, 'like');
-    dislikeBtn.onclick = () => vote(key, 'dislike');
+  // hover-highlight effect for shine stars
+  function initShineHover(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.addEventListener('mouseover', e => {
+      const star = e.target.closest('.shine-star');
+      if (!star) return;
+      const v = parseInt(star.getAttribute('data-v'));
+      container.querySelectorAll('.shine-star').forEach(s => {
+        s.classList.toggle('lit', parseInt(s.getAttribute('data-v')) <= v);
+      });
+    });
+    container.addEventListener('mouseleave', () => {
+      // re-render to restore actual state
+      const key = containerId === 'heroShineStars' ? null : window._currentModalKey;
+      renderShineBar(containerId === 'heroShineStars' ? 'hero' : 'modal', key);
+    });
   }
+
+  // ── HALL OF FAME ───────────────────────────────────────────
+  async function renderHallOfFame() {
+    const archive = await loadArchive();
+    const container = document.getElementById('hofCards');
+    if (!archive.length) {
+      container.innerHTML = `<div class="hof-empty">No calvos rated yet. Be the first to shine a light! 🔆</div>`;
+      return;
+    }
+
+    // Fetch all ratings in parallel
+    const ratingPromises = archive.map(a => {
+      const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+      return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
+    });
+    const allRatings = await Promise.all(ratingPromises);
+
+    // Pair with archive data and compute avg, filter those with at least 1 rating
+    const ranked = archive
+      .map((a, i) => ({
+        ...a,
+        avg: allRatings[i].count > 0 ? allRatings[i].total / allRatings[i].count : 0,
+        count: allRatings[i].count || 0,
+        key: a.date ? a.date.replace(/[:.]/g, '-') : null
+      }))
+      .filter(a => a.count > 0)
+      .sort((a, b) => b.avg - a.avg || b.count - a.count)
+      .slice(0, 5);
+
+    if (!ranked.length) {
+      container.innerHTML = `<div class="hof-empty">No calvos rated yet. Be the first to shine a light! 🔆</div>`;
+      return;
+    }
+
+    // Store for modal opening
+    window._hofData = ranked;
+
+    const medals = ['🥇', '🥈', '🥉', '4', '5'];
+    container.innerHTML = ranked.map((a, i) => {
+      const imgContent = a.imgSrc ? `<img src="${a.imgSrc}" alt="${a.name || ''}" />` : '🔆';
+      const rankClass = `rank-${i + 1}`;
+      return `
+        <div class="hof-card" onclick="openHofModal(${i})">
+          <div class="hof-rank ${rankClass}">${medals[i]}</div>
+          <div class="hof-card-img">${imgContent}</div>
+          <div class="hof-card-name">${a.name || '—'}</div>
+          <div class="hof-card-score">🔆 ${a.avg.toFixed(2)} · ${a.count} ${a.count === 1 ? 'vote' : 'votes'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function openHofModal(index) {
+    const a = (window._hofData || [])[index];
+    if (!a) return;
+    // Reuse the calvo overlay modal
+    const archiveIdx = (window._archiveData || []).findIndex(x => x.date === a.date);
+    if (archiveIdx >= 0) {
+      openCalvoModal(archiveIdx);
+    } else {
+      // Manually populate
+      window._currentModalKey = a.key;
+      const d = a.date ? new Date(a.date) : null;
+      const locale = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES';
+      document.getElementById('calvoModalDate').textContent = d ? d.toLocaleDateString(locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '—';
+      document.getElementById('calvoModalName').textContent = a.name || '—';
+      document.getElementById('calvoModalIssue').textContent = a.issue || '';
+      document.getElementById('calvoModalDesc').textContent = a.desc || '';
+      const img = document.getElementById('calvoModalImg');
+      const ph = document.getElementById('calvoModalPlaceholder');
+      if (a.imgSrc) { img.src = a.imgSrc; img.style.display = 'block'; ph.style.display = 'none'; }
+      else { img.style.display = 'none'; ph.style.display = 'flex'; }
+      if (a.key) renderShineBar('modal', a.key);
+      document.getElementById('calvoOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  // ── EASTER EGG: KONAMI CODE ────────────────────────────────
+  const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let konamiIdx = 0;
+  let konamiTimer = null;
+
+  document.addEventListener('keydown', e => {
+    if (e.key === KONAMI[konamiIdx]) {
+      konamiIdx++;
+      clearTimeout(konamiTimer);
+      konamiTimer = setTimeout(() => konamiIdx = 0, 2000);
+      if (konamiIdx === KONAMI.length) {
+        konamiIdx = 0;
+        triggerKonami();
+      }
+    } else {
+      konamiIdx = 0;
+    }
+  });
+
+  function triggerKonami() {
+    const flash = document.getElementById('konamiFlash');
+    document.body.classList.add('konami-mode');
+    flash.classList.add('active');
+
+    // Play a little fanfare using Web Audio
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4);
+        osc.start(ctx.currentTime + i * 0.12);
+        osc.stop(ctx.currentTime + i * 0.12 + 0.5);
+      });
+    } catch(e) {}
+
+    setTimeout(() => {
+      document.body.classList.remove('konami-mode');
+      flash.classList.remove('active');
+    }, 5000);
+  }
+
+  // ── EASTER EGG: PHOTO SPIN ─────────────────────────────────
+  let photoClickCount = 0;
+  let photoClickTimer = null;
+
+  document.getElementById('heroImgWrap').addEventListener('click', () => {
+    const img = document.getElementById('heroImg');
+    if (img.style.display === 'none') return; // no photo yet
+    photoClickCount++;
+    clearTimeout(photoClickTimer);
+    photoClickTimer = setTimeout(() => photoClickCount = 0, 1500);
+    if (photoClickCount >= 10) {
+      photoClickCount = 0;
+      img.style.transition = 'transform 0.6s cubic-bezier(.36,.07,.19,.97)';
+      img.style.transform = 'rotate(360deg) scale(1.1)';
+      setTimeout(() => {
+        img.style.transition = 'transform 0.4s ease';
+        img.style.transform = 'rotate(0deg) scale(1)';
+      }, 700);
+    }
+  });
+
+  // ── EASTER EGG: HIDDEN VISIT COUNTER ──────────────────────
+  async function incrementVisits() {
+    try {
+      const ref = doc(db, 'cotd', 'visits');
+      const snap = await getDoc(ref);
+      const count = snap.exists() ? (snap.data().count || 0) + 1 : 1;
+      await setDoc(ref, { count });
+      return count;
+    } catch(e) { return null; }
+  }
+
+  let visitCount = null;
+  let footerHoverTimer = null;
+
+  incrementVisits().then(n => { visitCount = n; });
+
+  document.getElementById('siteFooter').addEventListener('mouseenter', () => {
+    footerHoverTimer = setTimeout(() => {
+      const el = document.getElementById('secretCounter');
+      if (el && visitCount !== null) {
+        el.textContent = `👁 ${visitCount.toLocaleString()} visits`;
+        el.classList.add('revealed');
+      }
+    }, 3000);
+  });
+
+  document.getElementById('siteFooter').addEventListener('mouseleave', () => {
+    clearTimeout(footerHoverTimer);
+  });
 
   // ── RENDER ─────────────────────────────────────────────────
   async function renderHero() {
@@ -1728,7 +2079,7 @@
       phEl.style.display = 'flex';
     }
 
-    renderHeroVotes();
+    renderShineBar('hero', null);
   }
 
   async function renderArchive() {
@@ -1785,7 +2136,7 @@
     // Store the vote key for this entry
     const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
     window._currentModalKey = key;
-    if (key) renderModalVotes(key);
+    if (key) renderShineBar('modal', key);
 
     document.getElementById('calvoOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1880,7 +2231,8 @@
   window.openCalvoModal  = openCalvoModal;
   window.closeCalvoModal = closeCalvoModal;
   window.toggleCalvoMode = toggleCalvoMode;
-  window.vote = vote;
+  window.rate = rate;
+  window.openHofModal = openHofModal;
   window.openAnnModal    = openAnnModal;
   window.closeAnnModal   = closeAnnModal;
   window.saveAnnouncement  = saveAnnouncement;
@@ -1900,8 +2252,13 @@
   await renderArchive();
   await updateStatCount();
   await renderAnnouncement();
+  await renderHallOfFame();
 
-  // Close calvo modal on ESC
+  // Init shine hover effects
+  initShineHover('heroShineStars');
+  initShineHover('modalShineStars');
+
+  // Close modals on ESC
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeCalvoModal();
