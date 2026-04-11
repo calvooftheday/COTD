@@ -1,1273 +1,233 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>COTD – Calvo of the Day</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --cream: #f5efe6;
-      --warm-white: #faf7f2;
-      --ink: #1a1209;
-      --gold: #c9a84c;
-      --gold-light: #e8c96f;
-      --rust: #b5451b;
-      --rust-light: #e07050;
-      --tan: #d4b896;
-      --tan-light: #ecdcc8;
-      --muted: #8a7060;
-      --border: #c8b49a;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      background-color: var(--cream);
-      color: var(--ink);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── NOISE TEXTURE OVERLAY ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.5;
-    }
-
-    /* ── MASTHEAD ── */
-    header {
-      border-bottom: 2px solid var(--ink);
-      padding: 0 2rem;
-      position: sticky;
-      top: 0;
-      background: var(--cream);
-      z-index: 100;
-    }
-
-    .header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header-date {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .lang-switcher {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .lang-btn {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.2rem 0.55rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-
-    .lang-btn:hover, .lang-btn.active {
-      background: var(--ink);
-      color: var(--cream);
-      border-color: var(--ink);
-    }
-
-    .header-main {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.9rem 0 0.7rem;
-      gap: 2rem;
-      position: relative;
-    }
-
-    .site-title {
-      font-family: 'Playfair Display', serif;
-      font-weight: 900;
-      font-size: clamp(2.2rem, 5vw, 3.5rem);
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      line-height: 1;
-      text-align: center;
-    }
-
-    .site-title span {
-      color: var(--rust);
-    }
-
-    .site-subtitle {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      padding-bottom: 0.4rem;
-    }
-
-    .admin-toggle-wrap {
-      position: absolute;
-      right: 0;
-    }
-
-    .admin-toggle {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: none;
-      border: 1px dashed var(--border);
-      color: var(--muted);
-      padding: 0.3rem 0.7rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-
-    .admin-toggle:hover {
-      border-color: var(--rust);
-      color: var(--rust);
-    }
-
-    /* ── MAIN LAYOUT ── */
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 3rem 2rem 6rem;
-    }
-
-    /* ── HERO CARD ── */
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      border: 2px solid var(--ink);
-      background: var(--warm-white);
-      margin-bottom: 3rem;
-      box-shadow: 6px 6px 0 var(--ink);
-      animation: fadeSlide 0.6s ease both;
-    }
-
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero-image-wrap {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      border-right: 2px solid var(--ink);
-      background: var(--tan-light);
-      cursor: pointer;
-    }
-
-    .hero-image-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease;
-    }
-
-    .hero-image-wrap:hover img {
-      transform: scale(1.03);
-    }
-
-    .hero-image-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      color: var(--muted);
-    }
-
-    .hero-image-placeholder .bald-icon {
-      font-size: 5rem;
-      line-height: 1;
-    }
-
-    .hero-image-placeholder p {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .hero-badge {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      background: var(--rust);
-      color: var(--cream);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.6rem;
-    }
-
-    .hero-content {
-      padding: 2.5rem 2.5rem 2rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .cotd-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--rust);
-      margin-bottom: 0.6rem;
-    }
-
-    .cotd-name {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
-      font-weight: 900;
-      line-height: 1.1;
-      color: var(--ink);
-      margin-bottom: 1.2rem;
-      min-height: 2.5em;
-    }
-
-    .cotd-name[contenteditable="true"] {
-      outline: none;
-      border-bottom: 2px dashed var(--gold);
-      cursor: text;
-    }
-
-    .cotd-description {
-      font-size: 0.95rem;
-      line-height: 1.75;
-      color: var(--ink);
-      font-weight: 300;
-      flex: 1;
-      min-height: 6em;
-    }
-
-    .cotd-description[contenteditable="true"] {
-      outline: none;
-      border: 1px dashed var(--gold);
-      padding: 0.5rem;
-      border-radius: 2px;
-      cursor: text;
-    }
-
-    .hero-footer {
-      margin-top: 2rem;
-      padding-top: 1.2rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .issue-number {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .share-bar {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .share-btn {
-      width: 32px; height: 32px;
-      border: 1px solid var(--border);
-      background: none;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-      border-radius: 2px;
-      transition: all 0.2s;
-      color: var(--muted);
-    }
-
-    .share-btn:hover {
-      background: var(--ink);
-      color: var(--cream);
-      border-color: var(--ink);
-    }
-
-    /* ── ADMIN PANEL ── */
-    .admin-panel {
-      display: none;
-      background: var(--ink);
-      color: var(--cream);
-      border: 2px solid var(--ink);
-      padding: 2rem;
-      margin-bottom: 2.5rem;
-      box-shadow: 6px 6px 0 var(--rust);
-      animation: fadeSlide 0.3s ease both;
-    }
-
-    .admin-panel.open { display: block; }
-
-    .admin-panel h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--gold-light);
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .admin-field label {
-      display: block;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--tan);
-      margin-bottom: 0.4rem;
-    }
-
-    .admin-field input,
-    .admin-field textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--cream);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      padding: 0.6rem 0.8rem;
-      border-radius: 2px;
-      outline: none;
-      transition: border-color 0.2s;
-      resize: vertical;
-    }
-
-    .admin-field input:focus,
-    .admin-field textarea:focus {
-      border-color: var(--gold-light);
-    }
-
-    .admin-field.full { grid-column: 1 / -1; }
-
-    .image-upload-zone {
-      border: 2px dashed rgba(255,255,255,0.25);
-      border-radius: 4px;
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .image-upload-zone:hover {
-      border-color: var(--gold-light);
-      background: rgba(255,255,255,0.05);
-    }
-
-    .image-upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .image-upload-zone p {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--tan);
-    }
-
-    .image-upload-zone .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-
-    .image-preview-thumb {
-      width: 80px; height: 80px;
-      object-fit: cover;
-      border: 2px solid var(--gold);
-      border-radius: 2px;
-      margin: 0.5rem auto 0;
-      display: none;
-    }
-
-    .admin-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .btn-primary {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      background: var(--rust);
-      color: var(--cream);
-      border: none;
-      padding: 0.7rem 1.8rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-
-    .btn-primary:hover { background: var(--rust-light); }
-
-    .btn-secondary {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: none;
-      color: var(--tan);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 0.65rem 1.4rem;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-
-    .btn-secondary:hover { border-color: var(--tan); color: var(--cream); }
-
-    .save-msg {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--gold-light);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .save-msg.show { opacity: 1; }
-
-    /* ── ABOUT SECTION ── */
-    .about-section {
-      display: grid;
-      grid-template-columns: 5fr 3fr;
-      gap: 2px;
-      border: 2px solid var(--ink);
-      box-shadow: 4px 4px 0 var(--tan);
-      animation: fadeSlide 0.7s 0.15s ease both;
-    }
-
-    .about-block {
-      padding: 2rem 2.5rem;
-      background: var(--warm-white);
-    }
-
-    .about-block + .about-block {
-      border-left: 2px solid var(--ink);
-      background: var(--tan-light);
-    }
-
-    .section-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--rust);
-      margin-bottom: 0.8rem;
-    }
-
-    .about-block h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      line-height: 1.2;
-    }
-
-    .about-block p {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      color: var(--ink);
-      font-weight: 300;
-      margin-bottom: 0.8rem;
-    }
-
-    .about-block p:last-child { margin-bottom: 0; }
-
-    .stat-list {
-      list-style: none;
-      margin-top: 0.5rem;
-    }
-
-    .stat-list li {
-      display: flex;
-      align-items: baseline;
-      gap: 0.8rem;
-      padding: 0.7rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
-
-    .stat-list li:last-child { border-bottom: none; }
-
-    .stat-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--rust);
-      line-height: 1;
-    }
-
-    /* ── ARCHIVE STRIP ── */
-    .archive-strip {
-      margin-top: 2rem;
-      border: 2px solid var(--ink);
-      background: var(--warm-white);
-      box-shadow: 4px 4px 0 var(--gold);
-      animation: fadeSlide 0.7s 0.25s ease both;
-    }
-
-    .archive-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem;
-      border-bottom: 2px solid var(--ink);
-      background: var(--ink);
-    }
-
-    .archive-header span {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--tan);
-    }
-
-    .archive-cards {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0;
-    }
-
-    .archive-card {
-      padding: 1.2rem;
-      border-right: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .archive-card:last-child { border-right: none; }
-    .archive-card:hover { background: var(--tan-light); }
-
-    .archive-card-img {
-      aspect-ratio: 1;
-      background: var(--tan-light);
-      border: 1px solid var(--border);
-      margin-bottom: 0.6rem;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-    }
-
-    .archive-card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .archive-card-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 0.2rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .archive-card-date {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 2.5rem;
-      border-top: 2px solid var(--ink);
-      background: var(--ink);
-      color: var(--tan);
-    }
-
-    footer .footer-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-style: italic;
-      color: var(--gold-light);
-      margin-bottom: 0.4rem;
-    }
-
-    footer p {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    /* ── PASSWORD MODAL ── */
-    .pw-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(26,18,9,0.75);
-      z-index: 500;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .pw-overlay.open { display: flex; }
-
-    .pw-modal {
-      background: var(--ink);
-      border: 2px solid var(--gold);
-      box-shadow: 8px 8px 0 var(--rust);
-      padding: 2.5rem 2.5rem 2rem;
-      width: 100%;
-      max-width: 360px;
-      animation: fadeSlide 0.25s ease both;
-      text-align: center;
-    }
-
-    .pw-modal h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      color: var(--gold-light);
-      margin-bottom: 0.4rem;
-    }
-
-    .pw-modal p {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .pw-input-wrap {
-      position: relative;
-      margin-bottom: 1rem;
-    }
-
-    .pw-input {
-      width: 100%;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--cream);
-      font-family: 'DM Mono', monospace;
-      font-size: 1.2rem;
-      letter-spacing: 0.3em;
-      text-align: center;
-      padding: 0.7rem 1rem;
-      border-radius: 2px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .pw-input:focus { border-color: var(--gold-light); }
-    .pw-input.shake { animation: shake 0.35s ease; }
-
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20%      { transform: translateX(-8px); }
-      40%      { transform: translateX(8px); }
-      60%      { transform: translateX(-5px); }
-      80%      { transform: translateX(5px); }
-    }
-
-    .pw-error {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: var(--rust-light);
-      min-height: 1em;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-    }
-
-    .pw-actions {
-      display: flex;
-      gap: 0.8rem;
-      justify-content: center;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; }
-      .hero-image-wrap { border-right: none; border-bottom: 2px solid var(--ink); aspect-ratio: 4/3; }
-      .about-section { grid-template-columns: 1fr; }
-      .about-block + .about-block { border-left: none; border-top: 2px solid var(--ink); }
-      .archive-cards { grid-template-columns: repeat(3, 1fr); }
-      .archive-card:nth-child(n+4) { display: none; }
-      .admin-grid { grid-template-columns: 1fr; }
-      .header-main { flex-direction: column; gap: 0.2rem; }
-      .admin-toggle-wrap { position: static; margin-top: 0.5rem; }
-    }
-  </style>
-</head>
-<body>
-
-<header>
-  <div class="header-top">
-    <span class="header-date" id="header-date"></span>
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" onclick="setLang('es')">ES</button>
-      <button class="lang-btn" onclick="setLang('ca')">CA</button>
-    </div>
-  </div>
-  <div class="header-main">
-    <div>
-      <div class="site-title">C<span>O</span>TD</div>
-      <div class="site-subtitle" data-i18n="tagline">Calvo of the Day</div>
-    </div>
-    <div class="admin-toggle-wrap">
-      <button class="admin-toggle" onclick="toggleAdmin()" data-i18n="adminBtn">✦ Admin</button>
-    </div>
-  </div>
-</header>
-
-<!-- PASSWORD MODAL -->
-<div class="pw-overlay" id="pwOverlay" onclick="if(event.target===this)closePwModal()">
-  <div class="pw-modal">
-    <h3>✦ Admin Access</h3>
-    <p>Enter the secret password</p>
-    <div class="pw-input-wrap">
-      <input class="pw-input" id="pwInput" type="password" maxlength="20"
-        placeholder="····" onkeydown="if(event.key==='Enter') checkPassword()" autocomplete="off" />
-    </div>
-    <div class="pw-error" id="pwError"></div>
-    <div class="pw-actions">
-      <button class="btn-primary" onclick="checkPassword()">Enter</button>
-      <button class="btn-secondary" onclick="closePwModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADMIN PANEL -->
-<div style="max-width:1100px;margin:0 auto;padding:0 2rem;">
-  <div class="admin-panel" id="adminPanel">
-    <h2>✦ <span data-i18n="adminTitle">Edit Today's COTD</span></h2>
-    <div class="admin-grid">
-      <div class="admin-field">
-        <label data-i18n="adminName">Calvo Name</label>
-        <input type="text" id="adminName" placeholder="e.g. Zinedine Zidane" />
-      </div>
-      <div class="admin-field">
-        <label data-i18n="adminIssue">Issue / Edition No.</label>
-        <input type="text" id="adminIssue" placeholder="e.g. #042" />
-      </div>
-      <div class="admin-field full">
-        <label data-i18n="adminDesc">Description</label>
-        <textarea id="adminDesc" rows="4" placeholder="Write something celebratory about today's calvo..."></textarea>
-      </div>
-      <div class="admin-field full">
-        <label data-i18n="adminImg">Photo</label>
-        <div class="image-upload-zone" id="uploadZone">
-          <input type="file" accept="image/*" id="imageInput" onchange="handleImageUpload(event)" />
-          <div class="upload-icon">📸</div>
-          <p data-i18n="uploadPrompt">Click or drag an image here</p>
-          <img class="image-preview-thumb" id="previewThumb" alt="preview" />
-        </div>
-      </div>
-    </div>
-    <div class="admin-actions">
-      <button class="btn-primary" onclick="publishCOTD()" data-i18n="publishBtn">Publish COTD</button>
-      <button class="btn-secondary" onclick="toggleAdmin()" data-i18n="cancelBtn">Cancel</button>
-      <span class="save-msg" id="saveMsg" data-i18n="savedMsg">✓ Published!</span>
-    </div>
-  </div>
-</div>
-
-<main>
-
-  <!-- HERO CARD -->
-  <div class="hero" id="heroCard">
-    <div class="hero-image-wrap" id="heroImgWrap">
-      <div class="hero-image-placeholder" id="heroPlaceholder">
-        <div class="bald-icon">🔆</div>
-        <p data-i18n="noPhotoYet">No photo yet today</p>
-      </div>
-      <img id="heroImg" src="" alt="COTD" style="display:none;" />
-      <div class="hero-badge" data-i18n="todayBadge">Today</div>
-    </div>
-
-    <div class="hero-content">
-      <div>
-        <div class="cotd-label" data-i18n="heroLabel">Calvo of the Day</div>
-        <div class="cotd-name" id="heroName">—</div>
-        <div class="cotd-description" id="heroDesc" data-i18n="heroDescDefault">
-          No calvo has been crowned yet today. Check back soon, or if you're the admin, shine the spotlight! ✨
-        </div>
-      </div>
-      <div class="hero-footer">
-        <span class="issue-number" id="heroIssue">#—</span>
-        <div class="share-bar">
-          <button class="share-btn" title="Copy link" onclick="copyLink()">🔗</button>
-          <button class="share-btn" title="Share" onclick="shareNative()">↗</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABOUT SECTION -->
-  <div class="about-section">
-    <div class="about-block">
-      <div class="section-eyebrow" data-i18n="aboutEyebrow">About the Project</div>
-      <h2 data-i18n="aboutTitle">What is COTD?</h2>
-      <p data-i18n="aboutP1">Every day, one extraordinary bald individual is chosen and celebrated. This is not about lack of hair — it is about presence, confidence, and the magnificent power of a bare scalp shining in the light of the world.</p>
-      <p data-i18n="aboutP2">COTD — Calvo of the Day — is a daily homage to the chronically hairless and gloriously smooth-headed among us. From legend to neighbour, no calvo is too great or too humble for the spotlight.</p>
-      <p data-i18n="aboutP3">Nominations, suggestions, and fan mail can be directed to whoever runs this thing. You know who you are.</p>
-    </div>
-    <div class="about-block">
-      <div class="section-eyebrow" data-i18n="statsEyebrow">By the Numbers</div>
-      <h2 data-i18n="statsTitle">The Archive</h2>
-      <ul class="stat-list">
-        <li><span class="stat-num" id="statCount">0</span><span data-i18n="statCalvos">calvos crowned</span></li>
-        <li><span class="stat-num">∞</span><span data-i18n="statShine">shine emitted</span></li>
-        <li><span class="stat-num">0</span><span data-i18n="statHair">hairs required</span></li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ARCHIVE STRIP -->
-  <div class="archive-strip">
-    <div class="archive-header">
-      <span data-i18n="archiveTitle">Previous Calvos</span>
-      <span data-i18n="archiveScroll">↔ scroll</span>
-    </div>
-    <div class="archive-cards" id="archiveCards">
-      <!-- filled by JS -->
-    </div>
-  </div>
-
-</main>
-
-<footer>
-  <div class="footer-title">Calvo of the Day</div>
-  <p data-i18n="footerCredit">Est. today · Every scalp tells a story · COTD</p>
-</footer>
-
+```html
 <script type="module">
-  // ── FIREBASE ───────────────────────────────────────────────
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, collection, getDocs, orderBy, query, limit }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, orderBy, query, limit }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAmQir4ykeEXBNg19Ucsdk0_s2qlmYyPY8",
-    authDomain: "cotd-846c4.firebaseapp.com",
-    projectId: "cotd-846c4",
-    storageBucket: "cotd-846c4.firebasestorage.app",
-    messagingSenderId: "700565701499",
-    appId: "1:700565701499:web:0ac0e7d1c92a0c738bb3de",
-    measurementId: "G-X0LM3YKDEF"
+const firebaseConfig = {
+  apiKey: "AIzaSyAmQir4ykeEXBNg19Ucsdk0_s2qlmYyPY8",
+  authDomain: "cotd-846c4.firebaseapp.com",
+  projectId: "cotd-846c4",
+  storageBucket: "cotd-846c4.firebasestorage.app",
+  messagingSenderId: "700565701499",
+  appId: "1:700565701499:web:0ac0e7d1c92a0c738bb3de",
+  measurementId: "G-X0LM3YKDEF"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+let currentLang = 'en';
+let adminOpen = false;
+let adminAuthed = false;
+let pendingImage = null;
+
+async function loadState() {
+  try {
+    const snap = await getDoc(doc(db, 'cotd', 'today'));
+    return snap.exists() ? snap.data() : {};
+  } catch (e) { return {}; }
+}
+
+async function saveState(s) {
+  await setDoc(doc(db, 'cotd', 'today'), s);
+}
+
+async function loadArchive() {
+  try {
+    const q = query(collection(db, 'archive'), orderBy('date', 'desc'), limit(30));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => d.data());
+  } catch (e) { return []; }
+}
+
+async function saveArchive(state) {
+  const id = Date.now().toString();
+  await setDoc(doc(db, 'archive', id), state);
+}
+
+const ADMIN_PASSWORD = 'JLNL';
+
+function toggleAdmin() {
+  if (adminOpen) {
+    adminOpen = false;
+    document.getElementById('adminPanel').classList.remove('open');
+    return;
+  }
+  if (adminAuthed) {
+    openAdminPanel();
+  } else {
+    document.getElementById('pwOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('pwInput').focus(), 50);
+  }
+}
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === ADMIN_PASSWORD) {
+    adminAuthed = true;
+    closePwModal();
+    openAdminPanel();
+  } else {
+    const inp = document.getElementById('pwInput');
+    const err = document.getElementById('pwError');
+    err.textContent = 'Wrong password. Try again.';
+    inp.value = '';
+    inp.classList.add('shake');
+    setTimeout(() => inp.classList.remove('shake'), 400);
+    inp.focus();
+  }
+}
+
+function closePwModal() {
+  document.getElementById('pwOverlay').classList.remove('open');
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').textContent = '';
+}
+
+async function openAdminPanel() {
+  adminOpen = true;
+  const panel = document.getElementById('adminPanel');
+  panel.classList.add('open');
+  const s = await loadState();
+  document.getElementById('adminName').value = s.name || '';
+  document.getElementById('adminDesc').value = s.desc || '';
+  document.getElementById('adminIssue').value = s.issue || '';
+  if (s.imgSrc) {
+    const thumb = document.getElementById('previewThumb');
+    thumb.src = s.imgSrc;
+    thumb.style.display = 'block';
+    pendingImage = s.imgSrc;
+  }
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    pendingImage = ev.target.result;
+    const thumb = document.getElementById('previewThumb');
+    thumb.src = pendingImage;
+    thumb.style.display = 'block';
   };
+  reader.readAsDataURL(file);
+}
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+async function publishCOTD() {
+  const name  = document.getElementById('adminName').value.trim();
+  const desc  = document.getElementById('adminDesc').value.trim();
+  const issue = document.getElementById('adminIssue').value.trim();
 
-  // ── I18N ───────────────────────────────────────────────────
-  const i18n = {
-    en: {
-      tagline: 'Calvo of the Day',
-      adminBtn: '✦ Admin',
-      adminTitle: "Edit Today's COTD",
-      adminName: 'Calvo Name',
-      adminIssue: 'Issue / Edition No.',
-      adminDesc: 'Description',
-      adminImg: 'Photo',
-      uploadPrompt: 'Click or drag an image here',
-      publishBtn: 'Publish COTD',
-      cancelBtn: 'Cancel',
-      savedMsg: '✓ Published!',
-      heroLabel: 'Calvo of the Day',
-      heroDescDefault: 'No calvo has been crowned yet today. Check back soon, or if you\'re the admin, shine the spotlight! ✨',
-      noPhotoYet: 'No photo yet today',
-      todayBadge: 'Today',
-      aboutEyebrow: 'About the Project',
-      aboutTitle: 'What is COTD?',
-      aboutP1: 'Every day, one extraordinary bald individual is chosen and celebrated. This is not about lack of hair — it is about presence, confidence, and the magnificent power of a bare scalp shining in the light of the world.',
-      aboutP2: 'COTD — Calvo of the Day — is a daily homage to the chronically hairless and gloriously smooth-headed among us. From legend to neighbour, no calvo is too great or too humble for the spotlight.',
-      aboutP3: 'Nominations, suggestions, and fan mail can be directed to whoever runs this thing. You know who you are.',
-      statsEyebrow: 'By the Numbers',
-      statsTitle: 'The Archive',
-      statCalvos: 'calvos crowned',
-      statShine: 'shine emitted',
-      statHair: 'hairs required',
-      archiveTitle: 'Previous Calvos',
-      archiveScroll: '↔ scroll',
-      footerCredit: 'Est. today · Every scalp tells a story · COTD',
-      noArchive: 'No previous calvos yet.',
-    },
-    es: {
-      tagline: 'Calvo del Día',
-      adminBtn: '✦ Admin',
-      adminTitle: 'Editar el COTD de hoy',
-      adminName: 'Nombre del Calvo',
-      adminIssue: 'Número de edición',
-      adminDesc: 'Descripción',
-      adminImg: 'Foto',
-      uploadPrompt: 'Haz clic o arrastra una imagen aquí',
-      publishBtn: 'Publicar COTD',
-      cancelBtn: 'Cancelar',
-      savedMsg: '✓ ¡Publicado!',
-      heroLabel: 'Calvo del Día',
-      heroDescDefault: 'Aún no se ha coronado ningún calvo hoy. ¡Vuelve pronto, o si eres el admin, enciende el foco! ✨',
-      noPhotoYet: 'Sin foto aún hoy',
-      todayBadge: 'Hoy',
-      aboutEyebrow: 'Sobre el Proyecto',
-      aboutTitle: '¿Qué es el COTD?',
-      aboutP1: 'Cada día se elige y celebra a un individuo extraordinariamente calvo. No se trata de la falta de pelo — se trata de presencia, confianza y el magnífico poder de un cráneo reluciente bajo la luz del mundo.',
-      aboutP2: 'COTD — Calvo del Día — es un homenaje diario a los crónicamente sin pelo y gloriosamente lisos de cabeza entre nosotros. Desde leyendas hasta vecinos, ningún calvo es demasiado grande ni demasiado humilde para el foco.',
-      aboutP3: 'Las nominaciones, sugerencias y correo de fans pueden dirigirse a quien gestione esto. Ya sabes quién eres.',
-      statsEyebrow: 'En Cifras',
-      statsTitle: 'El Archivo',
-      statCalvos: 'calvos coronados',
-      statShine: 'brillo emitido',
-      statHair: 'pelos necesarios',
-      archiveTitle: 'Calvos Anteriores',
-      archiveScroll: '↔ desliza',
-      footerCredit: 'Fund. hoy · Cada cráneo cuenta una historia · COTD',
-      noArchive: 'Aún no hay calvos anteriores.',
-    },
-    ca: {
-      tagline: 'Calvo del Dia',
-      adminBtn: '✦ Admin',
-      adminTitle: "Edita el COTD d'avui",
-      adminName: 'Nom del Calvo',
-      adminIssue: "Número d'edició",
-      adminDesc: 'Descripció',
-      adminImg: 'Foto',
-      uploadPrompt: "Fes clic o arrossega una imatge ací",
-      publishBtn: 'Publicar COTD',
-      cancelBtn: 'Cancel·lar',
-      savedMsg: '✓ Publicat!',
-      heroLabel: 'Calvo del Dia',
-      heroDescDefault: "Encara no s'ha coronat cap calvo avui. Torna prompte, o si ets l'admin, encén el focus! ✨",
-      noPhotoYet: "Sense foto avui",
-      todayBadge: 'Avui',
-      aboutEyebrow: 'Sobre el Projecte',
-      aboutTitle: 'Què és el COTD?',
-      aboutP1: "Cada dia es tria i es celebra un individu extraordinàriament calvo. No es tracta de la manca de cabell — es tracta de presència, confiança i el magnífic poder d'un crani lluent sota la llum del món.",
-      aboutP2: "COTD — Calvo del Dia — és un homenatge diari als crònicament sense pèl i gloriosament llisos de cap entre nosaltres. Des de llegendes fins a veïns, cap calvo és massa gran ni massa humil per al focus.",
-      aboutP3: "Les nominacions, suggeriments i correu de fans poden dirigir-se a qui gestione açò. Ja saps qui ets.",
-      statsEyebrow: 'En Xifres',
-      statsTitle: "L'Arxiu",
-      statCalvos: 'calvos coronats',
-      statShine: 'lluentor emesa',
-      statHair: 'pèls necessaris',
-      archiveTitle: 'Calvos Anteriors',
-      archiveScroll: '↔ desplaça',
-      footerCredit: "Fund. avui · Cada crani conta una història · COTD",
-      noArchive: 'Encara no hi ha calvos anteriors.',
-    }
-  };
+  const publishBtn = document.querySelector('[data-i18n="publishBtn"]');
+  publishBtn.disabled = true;
+  publishBtn.textContent = '…';
 
-  let currentLang = 'en';
+  const state = { name, desc, issue, imgSrc: pendingImage || null, date: new Date().toISOString() };
 
-  function setLang(lang) {
-    currentLang = lang;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
-    applyTranslations();
-  }
-
-  function t(key) { return i18n[currentLang][key] || i18n['en'][key] || key; }
-
-  function applyTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      el.textContent = t(key);
-    });
-    // Update admin placeholders
-    document.getElementById('adminDesc').placeholder = currentLang === 'es'
-      ? 'Escribe algo celebratorio sobre el calvo de hoy...'
-      : currentLang === 'ca'
-      ? "Escriu alguna cosa celebratòria sobre el calvo d'avui..."
-      : 'Write something celebratory about today\'s calvo...';
-    renderArchive();
-    renderHero();
-  }
-
-  // ── FIRESTORE STATE ────────────────────────────────────────
-  async function loadState() {
-    try {
-      const snap = await getDoc(doc(db, 'cotd', 'today'));
-      return snap.exists() ? snap.data() : {};
-    } catch (e) { console.error('loadState:', e); return {}; }
-  }
-
-  async function saveState(s) {
-    await setDoc(doc(db, 'cotd', 'today'), s);
-  }
-
-  async function loadArchive() {
-    try {
-      const q = query(collection(db, 'archive'), orderBy('date', 'desc'), limit(30));
-      const snap = await getDocs(q);
-      return snap.docs.map(d => d.data());
-    } catch (e) { console.error('loadArchive:', e); return []; }
-  }
-
-  async function saveArchive(state) {
-    const dateKey = state.date.slice(0, 10); // e.g. "2024-06-01"
-    await setDoc(doc(db, 'archive', dateKey), state);
-  }
-
-  // ── ADMIN ──────────────────────────────────────────────────
-  const ADMIN_PASSWORD = 'JLNL';
-  let adminOpen = false;
-  let adminAuthed = false;
-  let pendingImage = null;
-
-  function toggleAdmin() {
-    if (adminOpen) {
-      // close panel
-      adminOpen = false;
-      document.getElementById('adminPanel').classList.remove('open');
-      return;
-    }
-    if (adminAuthed) {
-      openAdminPanel();
-    } else {
-      // show password modal
-      document.getElementById('pwOverlay').classList.add('open');
-      setTimeout(() => document.getElementById('pwInput').focus(), 50);
-    }
-  }
-
-  function checkPassword() {
-    const val = document.getElementById('pwInput').value;
-    if (val === ADMIN_PASSWORD) {
-      adminAuthed = true;
-      closePwModal();
-      openAdminPanel();
-    } else {
-      const inp = document.getElementById('pwInput');
-      const err = document.getElementById('pwError');
-      err.textContent = 'Wrong password. Try again.';
-      inp.value = '';
-      inp.classList.add('shake');
-      setTimeout(() => inp.classList.remove('shake'), 400);
-      inp.focus();
-    }
-  }
-
-  function closePwModal() {
-    document.getElementById('pwOverlay').classList.remove('open');
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwError').textContent = '';
-  }
-
-  async function openAdminPanel() {
-    adminOpen = true;
-    const panel = document.getElementById('adminPanel');
-    panel.classList.add('open');
-    const s = await loadState();
-    document.getElementById('adminName').value = s.name || '';
-    document.getElementById('adminDesc').value = s.desc || '';
-    document.getElementById('adminIssue').value = s.issue || '';
-    if (s.imgSrc) {
-      const thumb = document.getElementById('previewThumb');
-      thumb.src = s.imgSrc;
-      thumb.style.display = 'block';
-      pendingImage = s.imgSrc;
-    }
-  }
-
-  function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      pendingImage = ev.target.result;
-      const thumb = document.getElementById('previewThumb');
-      thumb.src = pendingImage;
-      thumb.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function publishCOTD() {
-    const name  = document.getElementById('adminName').value.trim();
-    const desc  = document.getElementById('adminDesc').value.trim();
-    const issue = document.getElementById('adminIssue').value.trim();
-
-    const publishBtn = document.querySelector('[data-i18n="publishBtn"]');
-    publishBtn.disabled = true;
-    publishBtn.textContent = '…';
-
-    const state = { name, desc, issue, imgSrc: pendingImage || null, date: new Date().toISOString() };
-
-    try {
-      await saveState(state);
-      await saveArchive(state);
-    } catch (e) {
-      console.error('publish error:', e);
-      publishBtn.disabled = false;
-      publishBtn.textContent = t('publishBtn');
-      alert('Error saving. Check Firestore rules are set to test mode.');
-      return;
-    }
-
+  try {
+    await saveState(state);
+    await saveArchive(state);
+  } catch (e) {
     publishBtn.disabled = false;
-    publishBtn.textContent = t('publishBtn');
-
-    await renderHero();
-    await renderArchive();
-    await updateStatCount();
-
-    const msg = document.getElementById('saveMsg');
-    msg.classList.add('show');
-    setTimeout(() => msg.classList.remove('show'), 2500);
-    setTimeout(() => toggleAdmin(), 1200);
+    publishBtn.textContent = 'Publish COTD';
+    alert('Error saving');
+    return;
   }
 
-  // ── RENDER ─────────────────────────────────────────────────
-  async function renderHero() {
-    const s = await loadState();
-
-    document.getElementById('heroName').textContent = s.name || '—';
-    document.getElementById('heroIssue').textContent = s.issue || '#—';
-
-    const descEl = document.getElementById('heroDesc');
-    if (s.desc) {
-      descEl.textContent = s.desc;
-      descEl.removeAttribute('data-i18n');
-    } else {
-      descEl.textContent = t('heroDescDefault');
-      descEl.setAttribute('data-i18n', 'heroDescDefault');
-    }
-
-    const imgEl = document.getElementById('heroImg');
-    const phEl  = document.getElementById('heroPlaceholder');
-    if (s.imgSrc) {
-      imgEl.src = s.imgSrc;
-      imgEl.style.display = 'block';
-      phEl.style.display = 'none';
-    } else {
-      imgEl.style.display = 'none';
-      phEl.style.display = 'flex';
-    }
-  }
-
-  async function renderArchive() {
-    const archive = await loadArchive();
-    const container = document.getElementById('archiveCards');
-
-    if (!archive.length) {
-      container.innerHTML = `<div style="padding:2rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);grid-column:1/-1;">${t('noArchive')}</div>`;
-      return;
-    }
-
-    container.innerHTML = archive.slice(0, 5).map(a => {
-      const d = a.date ? new Date(a.date) : null;
-      const dateStr = d ? d.toLocaleDateString(currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES', { day:'numeric', month: 'short' }) : '—';
-      const imgContent = a.imgSrc
-        ? `<img src="${a.imgSrc}" alt="${a.name || ''}" />`
-        : '🔆';
-      return `
-        <div class="archive-card">
-          <div class="archive-card-img">${imgContent}</div>
-          <div class="archive-card-name">${a.name || '—'}</div>
-          <div class="archive-card-date">${dateStr}</div>
-        </div>`;
-    }).join('');
-  }
-
-  async function updateStatCount() {
-    const archive = await loadArchive();
-    document.getElementById('statCount').textContent = archive.length;
-  }
-
-  // ── DATE ──────────────────────────────────────────────────
-  function renderDate() {
-    const now = new Date();
-    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const locale = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES';
-    document.getElementById('header-date').textContent = now.toLocaleDateString(locale, opts);
-  }
-
-  // ── SHARE ─────────────────────────────────────────────────
-  function copyLink() {
-    navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'));
-  }
-
-  async function shareNative() {
-    const s = await loadState();
-    if (navigator.share) {
-      navigator.share({ title: `COTD: ${s.name || 'Calvo of the Day'}`, url: window.location.href });
-    } else copyLink();
-  }
-
-  // ── INIT ──────────────────────────────────────────────────
-  // Expose globals needed by inline onclick handlers
-  window.toggleAdmin   = toggleAdmin;
-  window.checkPassword = checkPassword;
-  window.closePwModal  = closePwModal;
-  window.publishCOTD   = publishCOTD;
-  window.copyLink      = copyLink;
-  window.shareNative   = shareNative;
-  window.setLang = function(lang) {
-    currentLang = lang;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
-    applyTranslations();
-    renderDate();
-  };
-  window.handleImageUpload = handleImageUpload;
-
-  renderDate();
-  applyTranslations();
   await renderHero();
   await renderArchive();
   await updateStatCount();
+
+  publishBtn.disabled = false;
+  publishBtn.textContent = 'Publish COTD';
+
+  const msg = document.getElementById('saveMsg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2500);
+  setTimeout(() => toggleAdmin(), 1200);
+}
+
+async function renderHero() {
+  const s = await loadState();
+  document.getElementById('heroName').textContent = s.name || '—';
+  document.getElementById('heroIssue').textContent = s.issue || '#—';
+
+  const descEl = document.getElementById('heroDesc');
+  if (s.desc) {
+    descEl.textContent = s.desc;
+  } else {
+    descEl.textContent = 'No calvo has been crowned yet today.';
+  }
+
+  const imgEl = document.getElementById('heroImg');
+  const phEl  = document.getElementById('heroPlaceholder');
+  if (s.imgSrc) {
+    imgEl.src = s.imgSrc;
+    imgEl.style.display = 'block';
+    phEl.style.display = 'none';
+  } else {
+    imgEl.style.display = 'none';
+    phEl.style.display = 'flex';
+  }
+}
+
+async function renderArchive() {
+  const archive = await loadArchive();
+  const container = document.getElementById('archiveCards');
+
+  if (!archive.length) {
+    container.innerHTML = `<div style="padding:2rem;">No previous calvos.</div>`;
+    return;
+  }
+
+  container.innerHTML = archive.slice(0, 5).map(a => {
+    const d = a.date ? new Date(a.date) : null;
+    const dateStr = d ? d.toLocaleDateString() : '—';
+    const imgContent = a.imgSrc
+      ? `<img src="${a.imgSrc}" />`
+      : '🔆';
+    return `
+      <div class="archive-card">
+        <div class="archive-card-img">${imgContent}</div>
+        <div class="archive-card-name">${a.name || '—'}</div>
+        <div class="archive-card-date">${dateStr}</div>
+      </div>`;
+  }).join('');
+}
+
+async function updateStatCount() {
+  const archive = await loadArchive();
+  document.getElementById('statCount').textContent = archive.length || 0;
+}
+
+function renderDate() {
+  const now = new Date();
+  document.getElementById('header-date').textContent = now.toLocaleDateString();
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href);
+}
+
+async function shareNative() {
+  const s = await loadState();
+  if (navigator.share) {
+    navigator.share({ title: `COTD: ${s.name || ''}`, url: window.location.href });
+  } else copyLink();
+}
+
+window.toggleAdmin = toggleAdmin;
+window.checkPassword = checkPassword;
+window.closePwModal = closePwModal;
+window.publishCOTD = publishCOTD;
+window.copyLink = copyLink;
+window.shareNative = shareNative;
+window.handleImageUpload = handleImageUpload;
+
+renderDate();
+await renderHero();
+await renderArchive();
+await updateStatCount();
 </script>
-</body>
-</html>
+```
