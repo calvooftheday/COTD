@@ -4,6 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>COTD – Calvo of the Day</title>
+  <script>
+    // Runs synchronously before paint — no flash, no module timing issues
+    (function() {
+      var stored = localStorage.getItem('cotd_dark');
+      var dark = stored === '1' || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.classList.add('dark-early');
+      window.toggleDark = function() {
+        var isDark = document.body.classList.toggle('dark');
+        document.getElementById('darkToggle').textContent = isDark ? '🌙' : '☀️';
+        localStorage.setItem('cotd_dark', isDark ? '1' : '0');
+      };
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -18,6 +31,238 @@
       --tan-light: #ecdcc8;
       --muted: #8a7060;
       --border: #c8b49a;
+    }
+
+    /* Applied instantly by inline script to prevent theme flash */
+    html.dark-early body {
+      --cream: #161210;
+      --warm-white: #1e1a16;
+      --ink: #f0e6d6;
+      --tan-light: #2a2218;
+      --border: #3a2e24;
+      --muted: #7a6858;
+      background-color: #161210;
+    }
+
+    body.dark {
+      --cream: #161210;
+      --warm-white: #1e1a16;
+      --ink: #f0e6d6;
+      --gold: #c9a84c;
+      --gold-light: #e8c96f;
+      --rust: #c8563a;
+      --rust-light: #e07050;
+      --tan: #6a5848;
+      --tan-light: #2a2218;
+      --muted: #7a6858;
+      --border: #3a2e24;
+    }
+
+    /* dark mode specific overrides */
+    body.dark header { background: var(--cream); }
+    body.dark .hero { background: var(--warm-white); }
+    body.dark .about-block { background: var(--warm-white); }
+    body.dark .about-block + .about-block { background: var(--tan-light); }
+    body.dark .archive-strip { background: var(--warm-white); }
+    body.dark .archive-header { background: #0e0c0a; }
+    body.dark .archive-card:hover { background: var(--tan-light); }
+    body.dark .archive-search-wrap { background: var(--warm-white); }
+    body.dark .archive-search { background: #0e0c0a; border-color: var(--border); color: var(--ink); }
+    body.dark .hof-section { background: var(--warm-white); }
+    body.dark .hof-card:hover { background: var(--tan-light); }
+    body.dark .calvo-modal { background: var(--warm-white); }
+    body.dark .admin-panel { background: #0e0c0a; }
+    body.dark .pw-modal { background: #0e0c0a; }
+    body.dark .ann-modal { background: #0e0c0a; }
+    body.dark .share-modal { background: var(--warm-white); }
+    body.dark footer { background: #0e0c0a; }
+
+    /* dark mode toggle button */
+    .dark-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      width: 28px; height: 22px;
+      cursor: pointer;
+      border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      padding: 0;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .dark-toggle:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* smooth color transitions for dark mode — scoped to avoid breaking keyframe animations */
+    body, header, main, footer, section, div, span, p, h1, h2, h3, button, input, textarea, a {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* ── CALVLE (WORDLE) ── */
+    .calvle-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,6,2,0.85);
+      z-index: 550;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .calvle-overlay.open { display: flex; }
+
+    .calvle-modal {
+      background: var(--warm-white);
+      border: 2px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--gold);
+      width: 100%;
+      max-width: 400px;
+      padding: 1.8rem 1.8rem 2rem;
+      position: relative;
+      animation: fadeSlide 0.3s ease both;
+    }
+
+    .calvle-close {
+      position: absolute;
+      top: 0.7rem; right: 0.7rem;
+      width: 30px; height: 30px;
+      background: var(--ink); color: var(--cream);
+      border: none; font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 2px; transition: background 0.2s;
+    }
+
+    .calvle-close:hover { background: var(--rust); }
+
+    .calvle-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+
+    .calvle-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.4rem;
+    }
+
+    .calvle-grid {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 5px;
+      margin-bottom: 1.2rem;
+    }
+
+    .calvle-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .calvle-cell {
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: var(--cream);
+      transition: border-color 0.1s, transform 0.1s;
+      user-select: none;
+    }
+
+    .calvle-cell.filled { border-color: var(--ink); }
+    .calvle-cell.pop { animation: cellPop 0.1s ease both; }
+
+    @keyframes cellPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    .calvle-cell.flip { animation: cellFlip 0.5s ease both; }
+
+    @keyframes cellFlip {
+      0%   { transform: rotateX(0deg); }
+      50%  { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
+    }
+
+    .calvle-cell.correct {
+      background: #538d4e;
+      border-color: #538d4e;
+      color: #fff;
+    }
+
+    .calvle-cell.present {
+      background: #b59f3b;
+      border-color: #b59f3b;
+      color: #fff;
+    }
+
+    .calvle-cell.absent {
+      background: var(--muted);
+      border-color: var(--muted);
+      color: #fff;
+    }
+
+    .calvle-cell.shake { animation: shake 0.4s ease; }
+
+    .calvle-keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .calvle-kb-row {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .calvle-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      background: var(--tan-light);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      border-radius: 3px;
+      cursor: pointer;
+      height: 36px;
+      min-width: 28px;
+      padding: 0 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+
+    .calvle-key:active { opacity: 0.7; }
+    .calvle-key.wide { min-width: 48px; font-size: 0.65rem; }
+    .calvle-key.correct { background: #538d4e; color: #fff; border-color: #538d4e; }
+    .calvle-key.present { background: #b59f3b; color: #fff; border-color: #b59f3b; }
+    .calvle-key.absent  { background: var(--muted); color: #fff; border-color: var(--muted); }
+
+    .calvle-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-align: center;
+      color: var(--rust);
+      min-height: 1.4em;
+      margin-bottom: 0.6rem;
+      text-transform: uppercase;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -385,6 +630,11 @@
     .admin-toggle-wrap {
       position: absolute;
       right: 0;
+    }
+
+    .calvle-toggle-wrap {
+      position: absolute;
+      left: 0;
     }
 
     .admin-toggle {
@@ -1441,6 +1691,7 @@
       .admin-grid { grid-template-columns: 1fr; }
       .header-main { flex-direction: column; gap: 0.2rem; }
       .admin-toggle-wrap { position: static; margin-top: 0.5rem; }
+      .calvle-toggle-wrap { position: static; margin-top: 0.5rem; }
     }
   </style>
 </head>
@@ -1455,12 +1706,16 @@
   <div class="header-top">
     <span class="header-date" id="header-date"></span>
     <div class="lang-switcher">
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">☀️</button>
       <button class="lang-btn active" onclick="setLang('en')">EN</button>
       <button class="lang-btn" onclick="setLang('es')">ES</button>
       <button class="lang-btn" onclick="setLang('ca')">CA/VA</button>
     </div>
   </div>
   <div class="header-main">
+    <div class="calvle-toggle-wrap">
+      <button class="admin-toggle" onclick="openCalvle()">🔆 Calvle</button>
+    </div>
     <div>
       <div class="site-title">C<span id="secretO" onclick="toggleCalvoMode()">O</span>TD</div>
       <div class="site-subtitle" data-i18n="tagline">Calvo of the Day</div>
@@ -1670,6 +1925,18 @@
   <div class="council-title">The Calvo Council</div>
   <div class="council-subtitle">A Roll of Honour · All Calvos Ever Crowned</div>
   <div class="council-scroll" id="councilScroll"></div>
+</div>
+
+<!-- CALVLE MODAL -->
+<div class="calvle-overlay" id="calvleOverlay" onclick="if(event.target===this)closeCalvle()">
+  <div class="calvle-modal">
+    <button class="calvle-close" onclick="closeCalvle()">✕</button>
+    <div class="calvle-title">CALVLE</div>
+    <div class="calvle-subtitle">Guess the calvo · 5 letters · 6 tries · resets daily</div>
+    <div class="calvle-msg" id="calvleMsg"></div>
+    <div class="calvle-grid" id="calvleGrid"></div>
+    <div class="calvle-keyboard" id="calvleKeyboard"></div>
+  </div>
 </div>
 
 <!-- FLOATING ANNOUNCEMENT BUTTON (visible only when authed) -->
@@ -2685,8 +2952,251 @@
     closeAnnModal();
   }
 
+  // ── DARK MODE ──────────────────────────────────────────────
+  // toggleDark is defined in the inline <script> in <head> for timing reasons.
+  // Here we just sync the button icon and body class on load.
+  {
+    const isDark = localStorage.getItem('cotd_dark') === '1' ||
+      (!localStorage.getItem('cotd_dark') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.body.classList.toggle('dark', isDark);
+    document.documentElement.classList.remove('dark-early');
+    const btn = document.getElementById('darkToggle');
+    if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+  }
+
+  // ── CALVLE ─────────────────────────────────────────────────
+  const CALVLE_ANSWER = 'CALVO';
+  const CALVLE_ROWS = 6;
+  const CALVLE_COLS = 5;
+  const KB_ROWS = [
+    ['Q','W','E','R','T','Y','U','I','O','P'],
+    ['A','S','D','F','G','H','J','K','L'],
+    ['ENTER','Z','X','C','V','B','N','M','⌫']
+  ];
+
+  let calvleTyped = '';
+  let calvleTimer2 = null;
+
+  document.addEventListener('keypress', e => {
+    // council listener already exists separately — this one catches 'calvle'
+    calvleTyped += e.key.toLowerCase();
+    clearTimeout(calvleTimer2);
+    calvleTimer2 = setTimeout(() => calvleTyped = '', 1500);
+    if (calvleTyped.endsWith('calvle')) {
+      calvleTyped = '';
+      openCalvle();
+    }
+  });
+
+  // State
+  let calvleGuesses = [];  // array of strings
+  let calvleCurrent = '';
+  let calvleDone    = false;
+
+  function calvleStorageKey() {
+    const d = new Date();
+    return `calvle_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+  }
+
+  function calvleLoad() {
+    try {
+      const s = JSON.parse(localStorage.getItem(calvleStorageKey()) || 'null');
+      if (s) { calvleGuesses = s.guesses || []; calvleDone = s.done || false; }
+      else    { calvleGuesses = []; calvleDone = false; }
+    } catch { calvleGuesses = []; calvleDone = false; }
+    calvleCurrent = '';
+  }
+
+  function calvleSave() {
+    localStorage.setItem(calvleStorageKey(), JSON.stringify({ guesses: calvleGuesses, done: calvleDone }));
+  }
+
+  function calvleEvaluate(guess) {
+    // Returns array of 'correct' | 'present' | 'absent'
+    const result = Array(CALVLE_COLS).fill('absent');
+    const ansArr = CALVLE_ANSWER.split('');
+    const gArr   = guess.split('');
+    const used   = Array(CALVLE_COLS).fill(false);
+
+    // Pass 1: correct
+    gArr.forEach((l, i) => {
+      if (l === ansArr[i]) { result[i] = 'correct'; used[i] = true; }
+    });
+    // Pass 2: present
+    gArr.forEach((l, i) => {
+      if (result[i] === 'correct') return;
+      const j = ansArr.findIndex((al, ai) => al === l && !used[ai] && result[ai] !== 'correct');
+      if (j >= 0) { result[i] = 'present'; used[j] = true; }
+    });
+    return result;
+  }
+
+  function calvleRenderGrid() {
+    const grid = document.getElementById('calvleGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    for (let r = 0; r < CALVLE_ROWS; r++) {
+      const row = document.createElement('div');
+      row.className = 'calvle-row';
+      row.id = `calvle-row-${r}`;
+      for (let c = 0; c < CALVLE_COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'calvle-cell';
+        cell.id = `calvle-cell-${r}-${c}`;
+
+        if (r < calvleGuesses.length) {
+          const guess = calvleGuesses[r];
+          const result = calvleEvaluate(guess);
+          cell.textContent = guess[c] || '';
+          cell.className = `calvle-cell ${result[c]}`;
+        } else if (r === calvleGuesses.length && !calvleDone) {
+          cell.textContent = calvleCurrent[c] || '';
+          if (calvleCurrent[c]) cell.classList.add('filled');
+        }
+        row.appendChild(cell);
+      }
+      grid.appendChild(row);
+    }
+  }
+
+  function calvleRenderKeyboard() {
+    const kb = document.getElementById('calvleKeyboard');
+    if (!kb) return;
+    kb.innerHTML = '';
+
+    // Build letter-state map
+    const stateMap = {};
+    calvleGuesses.forEach(g => {
+      const res = calvleEvaluate(g);
+      g.split('').forEach((l, i) => {
+        const cur = stateMap[l];
+        const next = res[i];
+        if (!cur || (cur === 'absent' && next !== 'absent') || next === 'correct') stateMap[l] = next;
+      });
+    });
+
+    KB_ROWS.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'calvle-kb-row';
+      row.forEach(key => {
+        const btn = document.createElement('button');
+        btn.className = 'calvle-key' + (key.length > 1 ? ' wide' : '');
+        btn.textContent = key;
+        const state = stateMap[key];
+        if (state) btn.classList.add(state);
+        btn.onclick = () => calvleKey(key);
+        rowEl.appendChild(btn);
+      });
+      kb.appendChild(rowEl);
+    });
+  }
+
+  function calvleSetMsg(msg) {
+    const el = document.getElementById('calvleMsg');
+    if (el) el.textContent = msg;
+  }
+
+  function calvleAnimateRow(rowIdx, results, cb) {
+    for (let c = 0; c < CALVLE_COLS; c++) {
+      const cell = document.getElementById(`calvle-cell-${rowIdx}-${c}`);
+      if (!cell) continue;
+      setTimeout(() => {
+        cell.classList.add('flip');
+        setTimeout(() => {
+          cell.className = `calvle-cell ${results[c]}`;
+          if (c === CALVLE_COLS - 1 && cb) setTimeout(cb, 100);
+        }, 250);
+      }, c * 120);
+    }
+  }
+
+  function calvleKey(key) {
+    if (calvleDone) return;
+    if (key === '⌫' || key === 'Backspace') {
+      calvleCurrent = calvleCurrent.slice(0, -1);
+      calvleRenderGrid();
+      return;
+    }
+    if (key === 'ENTER' || key === 'Enter') {
+      if (calvleCurrent.length < CALVLE_COLS) {
+        // shake row
+        const row = document.getElementById(`calvle-row-${calvleGuesses.length}`);
+        if (row) { row.querySelectorAll('.calvle-cell').forEach(c => { c.classList.add('shake'); setTimeout(() => c.classList.remove('shake'), 400); }); }
+        calvleSetMsg('Not enough letters');
+        setTimeout(() => calvleSetMsg(''), 1200);
+        return;
+      }
+
+      const guess = calvleCurrent.toUpperCase();
+      const rowIdx = calvleGuesses.length;
+      const results = calvleEvaluate(guess);
+
+      // Fill current row with letters first
+      for (let c = 0; c < CALVLE_COLS; c++) {
+        const cell = document.getElementById(`calvle-cell-${rowIdx}-${c}`);
+        if (cell) cell.textContent = guess[c];
+      }
+
+      calvleGuesses.push(guess);
+      calvleCurrent = '';
+
+      calvleAnimateRow(rowIdx, results, () => {
+        calvleRenderKeyboard();
+        if (guess === CALVLE_ANSWER) {
+          calvleDone = true;
+          calvleSave();
+          const msgs = ['🔆 CALVO!', 'Brilliant!', 'A true calvo scholar!', 'Magnificent!', 'Smooth operator!', 'You got there!'];
+          calvleSetMsg(msgs[Math.min(rowIdx, msgs.length - 1)]);
+        } else if (calvleGuesses.length >= CALVLE_ROWS) {
+          calvleDone = true;
+          calvleSave();
+          calvleSetMsg('The answer was CALVO 🔆');
+        } else {
+          calvleSave();
+        }
+      });
+      return;
+    }
+
+    if (/^[a-zA-Z]$/.test(key) && calvleCurrent.length < CALVLE_COLS) {
+      calvleCurrent += key.toUpperCase();
+      calvleRenderGrid();
+      // pop animation on the cell just filled
+      const cell = document.getElementById(`calvle-cell-${calvleGuesses.length}-${calvleCurrent.length - 1}`);
+      if (cell) { cell.classList.add('pop'); setTimeout(() => cell.classList.remove('pop'), 120); }
+    }
+  }
+
+  function openCalvle() {
+    calvleLoad();
+    calvleRenderGrid();
+    calvleRenderKeyboard();
+    if (calvleDone) {
+      const won = calvleGuesses[calvleGuesses.length - 1] === CALVLE_ANSWER;
+      calvleSetMsg(won ? '🔆 Already solved today!' : 'The answer was CALVO 🔆');
+    }
+    document.getElementById('calvleOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCalvle() {
+    document.getElementById('calvleOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Physical keyboard support for Calvle
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('calvleOverlay').classList.contains('open')) return;
+    if (e.key === 'Backspace') { e.preventDefault(); calvleKey('⌫'); }
+    else if (e.key === 'Enter') { e.preventDefault(); calvleKey('ENTER'); }
+    else if (/^[a-zA-Z]$/.test(e.key)) calvleKey(e.key);
+  });
+
   // ── INIT ──────────────────────────────────────────────────
   // Expose globals needed by inline onclick handlers
+  window.closeCalvle = closeCalvle;
+  window.openCalvle  = openCalvle;
   window.toggleAdmin   = toggleAdmin;
   window.checkPassword = checkPassword;
   window.closePwModal  = closePwModal;
@@ -2735,6 +3245,7 @@
       closeAnnModal();
       closeShareModal();
       closeCouncil();
+      closeCalvle();
     }
   });
 </script>
