@@ -1684,8 +1684,10 @@
       .hero-image-wrap { border-right: none; border-bottom: 2px solid var(--ink); aspect-ratio: 4/3; }
       .about-section { grid-template-columns: 1fr; }
       .about-block + .about-block { border-left: none; border-top: 2px solid var(--ink); }
-      .archive-cards { grid-template-columns: repeat(3, 1fr); }
-      .archive-card:nth-child(n+4) { display: none; }
+      .archive-cards { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .archive-cards::-webkit-scrollbar { display: none; }
+      .archive-card { min-width: 140px; flex-shrink: 0; display: block; }
+      .archive-card:nth-child(n+4) { display: block; }
       .hof-cards { grid-template-columns: repeat(3, 1fr); }
       .hof-card:nth-child(n+4) { display: none; }
       .admin-grid { grid-template-columns: 1fr; }
