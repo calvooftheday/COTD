@@ -1962,6 +1962,224 @@
     .btn-delete-calvo:hover { background: var(--rust); color: var(--cream); border-color: var(--rust); }
     .is-admin .btn-delete-calvo { display: inline-block; }
 
+    /* ── OWNER PANEL ── */
+    .owner-btn {
+      display: none;
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      background: none;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.5rem 0.9rem;
+      cursor: pointer;
+      border-radius: 2px;
+      z-index: 200;
+      transition: all 0.2s;
+    }
+
+    .owner-btn.visible { display: block; }
+    .owner-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    .owner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,6,2,0.92);
+      z-index: 700;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 2rem 1rem 4rem;
+      backdrop-filter: blur(6px);
+    }
+
+    .owner-overlay.open { display: flex; }
+
+    .owner-panel {
+      background: var(--warm-white);
+      border: 2px solid var(--gold);
+      box-shadow: 8px 8px 0 var(--ink);
+      width: 100%;
+      max-width: 620px;
+      animation: fadeSlide 0.25s ease both;
+      position: relative;
+    }
+
+    .owner-panel-header {
+      background: var(--ink);
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .owner-panel-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    .owner-close {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.1);
+      color: var(--tan);
+      border: none; font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 2px; transition: background 0.2s;
+    }
+
+    .owner-close:hover { background: var(--rust); color: var(--cream); }
+
+    .owner-pw-gate {
+      padding: 2rem 1.5rem;
+    }
+
+    .owner-pw-gate p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .owner-pw-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .owner-pw-input {
+      flex: 1;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      padding: 0.5rem 0.8rem;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .owner-pw-input:focus { border-color: var(--gold); }
+    .owner-pw-error {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--rust);
+      margin-top: 0.6rem;
+      min-height: 1em;
+    }
+
+    .owner-content { display: none; padding: 1.5rem; }
+    .owner-content.unlocked { display: block; }
+
+    .owner-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.2rem;
+    }
+
+    .owner-tab {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+
+    .owner-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+    .owner-tab:hover { color: var(--ink); }
+
+    .owner-tab-content { display: none; }
+    .owner-tab-content.active { display: block; }
+
+    .owner-list-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .owner-list-item:last-child { border-bottom: none; }
+
+    .owner-item-info { flex: 1; min-width: 0; }
+
+    .owner-item-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--rust);
+      margin-bottom: 0.2rem;
+    }
+
+    .owner-item-body {
+      font-size: 0.85rem;
+      color: var(--ink);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .owner-item-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .owner-del-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .owner-del-btn:hover { background: var(--rust); color: var(--cream); border-color: var(--rust); }
+
+    .owner-empty {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .owner-loading {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 1.5rem 0;
+      letter-spacing: 0.1em;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .hero { grid-template-columns: 1fr; }
@@ -2264,6 +2482,47 @@
     <div class="calvle-msg" id="calvleMsg"></div>
     <div class="calvle-grid" id="calvleGrid"></div>
     <div class="calvle-keyboard" id="calvleKeyboard"></div>
+  </div>
+</div>
+
+<!-- OWNER BUTTON (only visible to CALVOOFTHEDAY) -->
+<button class="owner-btn" id="ownerBtn" onclick="openOwnerPanel()">⚙ Owner</button>
+
+<!-- OWNER PANEL -->
+<div class="owner-overlay" id="ownerOverlay" onclick="if(event.target===this)closeOwnerPanel()">
+  <div class="owner-panel">
+    <div class="owner-panel-header">
+      <h2>⚙ Owner Panel</h2>
+      <button class="owner-close" onclick="closeOwnerPanel()">✕</button>
+    </div>
+
+    <!-- Password gate -->
+    <div class="owner-pw-gate" id="ownerPwGate">
+      <p>Enter owner code to unlock</p>
+      <div class="owner-pw-row">
+        <input class="owner-pw-input" id="ownerPwInput" type="password" maxlength="10"
+          placeholder="····" autocomplete="off"
+          onkeydown="if(event.key==='Enter') checkOwnerCode()" />
+        <button class="btn-primary" onclick="checkOwnerCode()">Unlock</button>
+      </div>
+      <div class="owner-pw-error" id="ownerPwError"></div>
+    </div>
+
+    <!-- Unlocked content -->
+    <div class="owner-content" id="ownerContent">
+      <div class="owner-tabs">
+        <button class="owner-tab active" onclick="ownerTab('comments')">Comments</button>
+        <button class="owner-tab" onclick="ownerTab('accounts')">Accounts</button>
+      </div>
+      <div class="owner-tab-content active" id="ownerTabComments">
+        <div class="owner-loading" id="ownerCommentsLoading">Loading…</div>
+        <div id="ownerCommentsList"></div>
+      </div>
+      <div class="owner-tab-content" id="ownerTabAccounts">
+        <div class="owner-loading" id="ownerAccountsLoading">Loading…</div>
+        <div id="ownerAccountsList"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3625,6 +3884,7 @@
         saveCurrentUser({ username, hash });
         closeAccount();
         updateCommentUI();
+        checkIfOwner();
       } catch (e) { errEl.textContent = 'Error registering. Try again.'; }
 
     } else {
@@ -3637,6 +3897,7 @@
         saveCurrentUser({ username, hash });
         closeAccount();
         updateCommentUI();
+        checkIfOwner();
       } catch (e) { errEl.textContent = 'Error logging in. Try again.'; }
     }
   }
@@ -3644,6 +3905,7 @@
   function logout() {
     saveCurrentUser(null);
     updateCommentUI();
+    checkIfOwner();
   }
 
   // ── COMMENTS ───────────────────────────────────────────────
@@ -3769,8 +4031,183 @@
     }
   }
 
+  // ── OWNER PANEL ────────────────────────────────────────────
+  const OWNER_USERNAME = 'CALVOOFTHEDAY';
+  const OWNER_CODE     = 'PEPE';
+  let ownerAuthed = false;
+  let ownerActiveTab = 'comments';
+
+  function checkIfOwner() {
+    const btn = document.getElementById('ownerBtn');
+    if (btn) btn.classList.toggle('visible', !!(currentUser && currentUser.username === OWNER_USERNAME));
+  }
+
+  function openOwnerPanel() {
+    if (!currentUser || currentUser.username !== OWNER_USERNAME) return;
+    // Reset gate each time
+    document.getElementById('ownerPwInput').value = '';
+    document.getElementById('ownerPwError').textContent = '';
+    if (!ownerAuthed) {
+      document.getElementById('ownerPwGate').style.display = '';
+      document.getElementById('ownerContent').classList.remove('unlocked');
+    } else {
+      document.getElementById('ownerPwGate').style.display = 'none';
+      document.getElementById('ownerContent').classList.add('unlocked');
+      loadOwnerTab(ownerActiveTab);
+    }
+    document.getElementById('ownerOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (!ownerAuthed) setTimeout(() => document.getElementById('ownerPwInput').focus(), 60);
+  }
+
+  function closeOwnerPanel() {
+    document.getElementById('ownerOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function checkOwnerCode() {
+    const val = document.getElementById('ownerPwInput').value;
+    if (val === OWNER_CODE) {
+      ownerAuthed = true;
+      document.getElementById('ownerPwGate').style.display = 'none';
+      document.getElementById('ownerContent').classList.add('unlocked');
+      loadOwnerTab(ownerActiveTab);
+    } else {
+      const inp = document.getElementById('ownerPwInput');
+      inp.value = '';
+      inp.classList.add('shake');
+      setTimeout(() => inp.classList.remove('shake'), 400);
+      document.getElementById('ownerPwError').textContent = 'Wrong code.';
+    }
+  }
+
+  function ownerTab(tab) {
+    ownerActiveTab = tab;
+    document.querySelectorAll('.owner-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.owner-tab-content').forEach(c => c.classList.remove('active'));
+    const tabEl = tab === 'comments' ? document.getElementById('ownerTabComments') : document.getElementById('ownerTabAccounts');
+    if (tabEl) tabEl.classList.add('active');
+    const tabs = document.querySelectorAll('.owner-tab');
+    if (tab === 'comments' && tabs[0]) tabs[0].classList.add('active');
+    if (tab === 'accounts' && tabs[1]) tabs[1].classList.add('active');
+    loadOwnerTab(tab);
+  }
+
+  async function loadOwnerTab(tab) {
+    if (tab === 'comments') await loadOwnerComments();
+    else await loadOwnerAccounts();
+  }
+
+  async function loadOwnerComments() {
+    const loading = document.getElementById('ownerCommentsLoading');
+    const list    = document.getElementById('ownerCommentsList');
+    loading.style.display = 'block';
+    list.innerHTML = '';
+
+    try {
+      // Fetch all archive entries to get comment keys
+      const archive = await loadAllArchive();
+      const allComments = [];
+
+      await Promise.all(archive.map(async a => {
+        const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+        if (!key) return;
+        const comments = await loadComments(key);
+        comments.forEach(c => allComments.push({ ...c, calvoName: a.name || '—', key }));
+      }));
+
+      // Sort newest first
+      allComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      loading.style.display = 'none';
+
+      if (!allComments.length) {
+        list.innerHTML = `<div class="owner-empty">No comments yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = allComments.map(c => {
+        const d = new Date(c.createdAt);
+        const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        return `<div class="owner-list-item">
+          <div class="owner-item-info">
+            <div class="owner-item-title">${escHtml(c.username)} · on <em>${escHtml(c.calvoName)}</em></div>
+            <div class="owner-item-body">${escHtml(c.text)}</div>
+            <div class="owner-item-meta">${timeStr}</div>
+          </div>
+          <button class="owner-del-btn" onclick="ownerDeleteComment('${c.key}','${c.id}')">Delete</button>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      loading.style.display = 'none';
+      list.innerHTML = `<div class="owner-empty">Error loading comments.</div>`;
+    }
+  }
+
+  async function ownerDeleteComment(key, id) {
+    if (!ownerAuthed) return;
+    await deleteDoc(doc(db, 'comments', key, 'items', id));
+    await loadOwnerComments();
+    // Refresh hero comments if visible
+    if (window._heroCommentKey === key) renderComments(key);
+    // Refresh modal comments if visible
+    if (document.getElementById('calvoOverlay').classList.contains('open') && window._currentModalKey === key) {
+      renderModalComments(key);
+    }
+  }
+
+  async function loadOwnerAccounts() {
+    const loading = document.getElementById('ownerAccountsLoading');
+    const list    = document.getElementById('ownerAccountsList');
+    loading.style.display = 'block';
+    list.innerHTML = '';
+
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const users = snap.docs.map(d => d.data()).filter(u => u.username !== OWNER_USERNAME);
+      users.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+      loading.style.display = 'none';
+
+      if (!users.length) {
+        list.innerHTML = `<div class="owner-empty">No accounts yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = users.map(u => {
+        const d = u.createdAt ? new Date(u.createdAt) : null;
+        const dateStr = d ? d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—';
+        return `<div class="owner-list-item">
+          <div class="owner-item-info">
+            <div class="owner-item-title">${escHtml(u.username)}</div>
+            <div class="owner-item-meta">Joined ${dateStr}</div>
+          </div>
+          <button class="owner-del-btn" onclick="ownerDeleteAccount('${escHtml(u.username)}')">Delete</button>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      loading.style.display = 'none';
+      list.innerHTML = `<div class="owner-empty">Error loading accounts.</div>`;
+    }
+  }
+
+  async function ownerDeleteAccount(username) {
+    if (!ownerAuthed) return;
+    if (!confirm(`Delete account "${username}"? This cannot be undone.`)) return;
+    await deleteDoc(doc(db, 'users', username));
+    // If the deleted user is currently logged in, log them out
+    if (currentUser && currentUser.username === username) logout();
+    await loadOwnerAccounts();
+  }
+
   // ── INIT ──────────────────────────────────────────────────
   // Expose globals needed by inline onclick handlers
+  window.openOwnerPanel  = openOwnerPanel;
+  window.closeOwnerPanel = closeOwnerPanel;
+  window.checkOwnerCode  = checkOwnerCode;
+  window.ownerTab        = ownerTab;
+  window.ownerDeleteComment = ownerDeleteComment;
+  window.ownerDeleteAccount = ownerDeleteAccount;
   window.closeCalvle = closeCalvle;
   window.openCalvle  = openCalvle;
   window.toggleAdmin   = toggleAdmin;
@@ -3812,6 +4249,7 @@
   window.handleImageUpload = handleImageUpload;
 
   loadCurrentUser();
+  checkIfOwner();
   renderDate();
   applyTranslations();
   await renderHero();
@@ -3833,6 +4271,7 @@
       closeCouncil();
       closeCalvle();
       closeAccount();
+      closeOwnerPanel();
     }
   });
 </script>
