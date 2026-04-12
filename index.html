@@ -1678,6 +1678,26 @@
 
     .council-close-btn:hover { background: var(--rust); color: var(--cream); border-color: var(--rust); }
 
+    /* ── HERO COMMENTS ── */
+    .hero-comments {
+      border: 2px solid var(--ink);
+      border-top: none;
+      background: var(--warm-white);
+      margin-bottom: 3rem;
+      box-shadow: 6px 6px 0 var(--ink);
+      display: none; /* hidden until a COTD is published */
+    }
+
+    .hero-comments.visible { display: block; }
+
+    .hero-comments-inner {
+      padding: 1.5rem 2rem 1.8rem;
+    }
+
+    .hero-comments .comments-label {
+      margin-bottom: 0.9rem;
+    }
+
     /* ── ACCOUNT MODAL ── */
     .account-overlay {
       display: none;
@@ -2061,13 +2081,10 @@
         <button class="btn-secondary" style="font-size:0.65rem;padding:0.4rem 0.9rem;" onclick="openShareCard()">🖼 Share Card</button>
         <button class="btn-delete-calvo" id="deleteCalvoBtn" onclick="deleteCurrentCalvo()">🗑 Delete Calvo</button>
       </div>
-      <div class="comments-section" id="commentsSection">
-        <div class="comments-label">
-          <span>Comments</span>
-          <span id="commentUserTag"></span>
-        </div>
-        <div id="commentInputArea"></div>
-        <div class="comment-list" id="commentList"></div>
+      <!-- read-only comments shown from the calvo's original COTD day -->
+      <div class="comments-section" id="modalCommentsSection">
+        <div class="comments-label"><span>Comments</span></div>
+        <div class="comment-list" id="modalCommentList"></div>
       </div>
     </div>
   </div>
@@ -2147,6 +2164,18 @@
           <span class="shine-avg" id="heroShineAvg"></span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- HERO COMMENTS (full width, below the card) -->
+  <div class="hero-comments" id="heroCommentsWrap">
+    <div class="hero-comments-inner">
+      <div class="comments-label">
+        <span>Comments</span>
+        <span id="commentUserTag"></span>
+      </div>
+      <div id="commentInputArea"></div>
+      <div class="comment-list" id="commentList"></div>
     </div>
   </div>
 
@@ -3094,6 +3123,18 @@
     }
 
     renderShineBar('hero', null);
+
+    // Comments — only show when a COTD is published
+    const commentsWrap = document.getElementById('heroCommentsWrap');
+    if (s.date) {
+      const key = s.date.replace(/[:.]/g, '-');
+      window._heroCommentKey = key;
+      if (commentsWrap) commentsWrap.classList.add('visible');
+      updateCommentUI();
+    } else {
+      window._heroCommentKey = null;
+      if (commentsWrap) commentsWrap.classList.remove('visible');
+    }
   }
 
   async function renderArchive() {
@@ -3162,9 +3203,8 @@
     const modal = document.querySelector('.calvo-modal');
     if (modal) modal.classList.toggle('is-admin', !!adminAuthed);
 
-    // Comments
-    updateCommentUI();
-    if (key) renderComments(key);
+    // Read-only comments in the archive modal
+    if (key) renderModalComments(key);
 
     document.getElementById('calvoOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -3657,7 +3697,8 @@
   }
 
   function updateCommentUI() {
-    const key = window._currentModalKey;
+    // Only the hero card has the live comment input — identified by #commentInputArea
+    const key = window._heroCommentKey;
     const inputArea = document.getElementById('commentInputArea');
     const tagEl = document.getElementById('commentUserTag');
     if (!inputArea) return;
@@ -3667,8 +3708,8 @@
       inputArea.innerHTML = `
         <div class="comment-input-row">
           <input class="comment-input" id="commentInput" placeholder="Add a comment…" maxlength="120"
-            onkeydown="if(event.key==='Enter'){postComment(window._currentModalKey,this.value);this.value='';}" />
-          <button class="comment-submit" onclick="const i=document.getElementById('commentInput');postComment(window._currentModalKey,i.value);i.value='';">Post</button>
+            onkeydown="if(event.key==='Enter'){postComment(window._heroCommentKey,this.value);this.value='';}" />
+          <button class="comment-submit" onclick="const i=document.getElementById('commentInput');postComment(window._heroCommentKey,i.value);i.value='';">Post</button>
         </div>`;
     } else {
       tagEl.textContent = '';
@@ -3678,6 +3719,31 @@
     }
 
     if (key) renderComments(key);
+  }
+
+  async function renderModalComments(key) {
+    // Read-only view of comments in the archive modal
+    const list = document.getElementById('modalCommentList');
+    if (!list) return;
+    const comments = await loadComments(key);
+    if (!comments.length) {
+      list.innerHTML = `<div class="comment-empty">No comments on this calvo.</div>`;
+      return;
+    }
+    list.innerHTML = comments.map(c => {
+      const d = new Date(c.createdAt);
+      const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      return `<div class="comment-item">
+        <button class="comment-delete" onclick="deleteComment('${key}','${c.id}');renderModalComments('${key}')">✕</button>
+        <div class="comment-author">${escHtml(c.username)}</div>
+        <div class="comment-text">${escHtml(c.text)}</div>
+        <div class="comment-time">${timeStr}</div>
+      </div>`;
+    }).join('');
+
+    // Show admin delete buttons if applicable
+    const section = document.getElementById('modalCommentsSection');
+    if (section) section.classList.toggle('is-admin', !!adminAuthed);
   }
 
   // ── DELETE CALVO (ADMIN) ────────────────────────────────────
@@ -3734,6 +3800,7 @@
   window.logout          = logout;
   window.postComment     = postComment;
   window.deleteComment   = deleteComment;
+  window.renderModalComments = renderModalComments;
   window.deleteCurrentCalvo = deleteCurrentCalvo;
   window.setLang = function(lang) {
     currentLang = lang;
