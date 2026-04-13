@@ -985,11 +985,90 @@
     /* ── ABOUT SECTION ── */
     .about-section {
       display: grid;
-      grid-template-columns: 5fr 3fr;
+      grid-template-columns: 5fr 3fr 3fr;
       gap: 2px;
       border: 2px solid var(--ink);
       box-shadow: 4px 4px 0 var(--tan);
       animation: fadeSlide 0.7s 0.15s ease both;
+    }
+
+    /* ── COTW LEADERBOARD ── */
+    .cotw-block {
+      padding: 2rem 1.5rem;
+      background: var(--ink);
+      color: var(--cream);
+      border-left: 2px solid var(--ink);
+    }
+
+    .cotw-block .section-eyebrow { color: var(--gold); }
+    .cotw-block h2 { color: var(--gold-light); }
+
+    .cotw-list { list-style: none; margin-top: 0.6rem; }
+
+    .cotw-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .cotw-item:last-child { border-bottom: none; }
+
+    .cotw-medal {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .cotw-img {
+      width: 36px; height: 36px;
+      border-radius: 2px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .cotw-img img { width: 100%; height: 100%; object-fit: cover; }
+
+    .cotw-info { flex: 1; min-width: 0; }
+
+    .cotw-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--cream);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cotw-score {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      margin-top: 0.1rem;
+    }
+
+    .cotw-empty {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.6;
+      margin-top: 0.4rem;
+    }
+
+    .cotw-qualifier {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+      margin-top: 0.5rem;
     }
 
     .about-block {
@@ -1966,25 +2045,22 @@
     /* ── OWNER PANEL ── */
     .owner-btn {
       display: none;
-      position: fixed;
-      bottom: 2rem;
-      left: 2rem;
       background: none;
-      border: 1px dashed var(--border);
-      color: var(--muted);
+      border: 1px dashed rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.25);
       font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
+      font-size: 0.55rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 0.5rem 0.9rem;
+      padding: 0.3rem 0.7rem;
       cursor: pointer;
       border-radius: 2px;
-      z-index: 200;
       transition: all 0.2s;
+      margin-top: 0.6rem;
     }
 
-    .owner-btn.visible { display: block; }
-    .owner-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .owner-btn.visible { display: inline-block; }
+    .owner-btn:hover { border-color: var(--gold); color: var(--gold-light); }
 
     .owner-overlay {
       display: none;
@@ -2181,12 +2257,78 @@
       letter-spacing: 0.1em;
     }
 
+    /* ── EMAIL SIGNUP ── */
+    .email-signup {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .email-signup-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--tan);
+      margin-bottom: 0.6rem;
+    }
+
+    .email-signup-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .email-input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 200px;
+    }
+
+    .email-input:focus { border-color: var(--gold); }
+    .email-input::placeholder { color: var(--muted); }
+
+    .email-submit {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--ink);
+      border: none;
+      padding: 0.45rem 1rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .email-submit:hover { background: var(--gold-light); }
+
+    .email-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--gold-light);
+      margin-top: 0.5rem;
+      min-height: 1em;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .hero { grid-template-columns: 1fr; }
       .hero-image-wrap { border-right: none; border-bottom: 2px solid var(--ink); aspect-ratio: 4/3; }
       .about-section { grid-template-columns: 1fr; }
       .about-block + .about-block { border-left: none; border-top: 2px solid var(--ink); }
+      .cotw-block { border-left: none; border-top: 2px solid var(--ink); }
       .archive-cards { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
       .archive-cards::-webkit-scrollbar { display: none; }
       .archive-card { min-width: 130px; flex-shrink: 0; display: block; }
@@ -2219,6 +2361,7 @@
       <button class="lang-btn active" onclick="setLang('en')">EN</button>
       <button class="lang-btn" onclick="setLang('es')">ES</button>
       <button class="lang-btn" onclick="setLang('ca')">CA/VA</button>
+      <button class="lang-btn" id="headerAccountBtn" onclick="openAccount()" style="border-style:dashed;">👤 Log in</button>
     </div>
   </div>
   <div class="header-main">
@@ -2420,6 +2563,14 @@
         <li><span class="stat-num">0</span><span data-i18n="statHair">hairs required</span></li>
       </ul>
     </div>
+    <div class="cotw-block">
+      <div class="section-eyebrow">This Week</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:0.2rem;">🏅 Race</h2>
+      <div class="cotw-qualifier">Min. 3 ratings to qualify</div>
+      <ul class="cotw-list" id="cotwList">
+        <li class="cotw-empty">Loading…</li>
+      </ul>
+    </div>
   </div>
 
   <!-- ARCHIVE STRIP -->
@@ -2439,7 +2590,7 @@
   <div class="hof-section">
     <div class="hof-header">
       <span>🏆 Hall of Fame</span>
-      <span>Top 5 · Avg Shine Rating</span>
+      <span>Top 5 · Avg Rating · Min. 3 ratings</span>
     </div>
     <div class="hof-cards" id="hofCards">
       <!-- filled by JS -->
@@ -2454,10 +2605,20 @@
 <footer id="siteFooter">
   <div class="footer-title">Calvo of the Day</div>
   <p data-i18n="footerCredit">Est. today · Every scalp tells a story · COTD</p>
-  <p class="secret-counter" id="secretCounter"></p>
-</footer>
 
-<!-- SHARE CARD MODAL -->
+  <!-- Email subscription -->
+  <div class="email-signup" id="emailSignupWrap">
+    <p class="email-signup-label">Get notified when a new Calvo drops 🔆</p>
+    <div class="email-signup-row">
+      <input class="email-input" id="emailInput" type="email" placeholder="your@email.com" maxlength="100" />
+      <button class="email-submit" onclick="subscribeEmail()">Notify me</button>
+    </div>
+    <div class="email-msg" id="emailMsg"></div>
+  </div>
+
+  <p class="secret-counter" id="secretCounter"></p>
+  <button class="owner-btn" id="ownerBtn" onclick="openOwnerPanel()">⚙ Owner</button>
+</footer>
 <div class="share-overlay" id="shareOverlay" onclick="if(event.target===this)closeShareModal()">
   <div class="share-modal">
     <button class="share-modal-close" onclick="closeShareModal()">✕</button>
@@ -2488,9 +2649,6 @@
     <div class="calvle-keyboard" id="calvleKeyboard"></div>
   </div>
 </div>
-
-<!-- OWNER BUTTON (only visible to CALVOOFTHEDAY) -->
-<button class="owner-btn" id="ownerBtn" onclick="openOwnerPanel()">⚙ Owner</button>
 
 <!-- OWNER PANEL -->
 <div class="owner-overlay" id="ownerOverlay" onclick="if(event.target===this)closeOwnerPanel()">
@@ -2771,7 +2929,22 @@
     const s = await loadState();
     document.getElementById('adminName').value = s.name || '';
     document.getElementById('adminDesc').value = s.desc || '';
-    document.getElementById('adminIssue').value = s.issue || '';
+
+    // Auto-increment edition number if field is empty
+    if (!s.issue) {
+      const allArchive = await loadAllArchive();
+      let maxNum = 0;
+      allArchive.forEach(a => {
+        if (a.issue) {
+          const n = parseInt((a.issue || '').replace(/\D/g, ''), 10);
+          if (!isNaN(n) && n > maxNum) maxNum = n;
+        }
+      });
+      document.getElementById('adminIssue').value = `#${String(maxNum + 1).padStart(3, '0')}`;
+    } else {
+      document.getElementById('adminIssue').value = s.issue;
+    }
+
     if (s.imgSrc) {
       const thumb = document.getElementById('previewThumb');
       thumb.src = s.imgSrc;
@@ -2821,6 +2994,7 @@
     await renderHero();
     await renderArchive();
     await updateStatCount();
+    await renderCOTW();
 
     const msg = document.getElementById('saveMsg');
     msg.classList.add('show');
@@ -3943,7 +4117,7 @@
     const list = document.getElementById('commentList');
     if (!list) return;
     const comments = await loadComments(key);
-    const isOwner = !!(currentUser && currentUser.username === OWNER_USERNAME && ownerAuthed);
+    const isOwner = isOwnerUser() && ownerAuthed;
     if (!comments.length) {
       list.innerHTML = `<div class="comment-empty">No comments yet. Be the first! 🔆</div>`;
       return;
@@ -3994,7 +4168,7 @@
     const list = document.getElementById('modalCommentList');
     if (!list) return;
     const comments = await loadComments(key);
-    const isOwner = !!(currentUser && currentUser.username === OWNER_USERNAME && ownerAuthed);
+    const isOwner = isOwnerUser() && ownerAuthed;
 
     if (!comments.length) {
       list.innerHTML = `<div class="comment-empty">No comments on this calvo.</div>`;
@@ -4036,18 +4210,23 @@
   }
 
   // ── OWNER PANEL ────────────────────────────────────────────
-  const OWNER_USERNAME = 'CALVOOFTHEDAY';
-  const OWNER_CODE     = 'PEPE';
+  const OWNER_USERNAMES = ['CALVOOFTHEDAY', 'CALVO'];
+  const OWNER_USERNAME  = 'CALVOOFTHEDAY'; // kept for backwards compat
+  const OWNER_CODE      = 'PEPE';
   let ownerAuthed = false;
   let ownerActiveTab = 'comments';
 
+  function isOwnerUser() {
+    return !!(currentUser && OWNER_USERNAMES.includes(currentUser.username));
+  }
+
   function checkIfOwner() {
     const btn = document.getElementById('ownerBtn');
-    if (btn) btn.classList.toggle('visible', !!(currentUser && currentUser.username === OWNER_USERNAME));
+    if (btn) btn.classList.toggle('visible', isOwnerUser());
   }
 
   function openOwnerPanel() {
-    if (!currentUser || currentUser.username !== OWNER_USERNAME) return;
+    if (!isOwnerUser()) return;
     // Reset gate each time
     document.getElementById('ownerPwInput').value = '';
     document.getElementById('ownerPwError').textContent = '';
@@ -4218,6 +4397,107 @@
     await loadOwnerAccounts();
   }
 
+  // ── CALVO OF THE WEEK ──────────────────────────────────────
+  function getWeekStart() {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    const mon = new Date(now.setDate(diff));
+    mon.setHours(0, 0, 0, 0);
+    return mon;
+  }
+
+  async function renderCOTW() {
+    const list = document.getElementById('cotwList');
+    if (!list) return;
+
+    const weekStart = getWeekStart();
+    const archive = await loadAllArchive();
+
+    // Filter to calvos published this week
+    const thisWeek = archive.filter(a => {
+      if (!a.date) return false;
+      return new Date(a.date) >= weekStart;
+    });
+
+    if (!thisWeek.length) {
+      list.innerHTML = `<li class="cotw-empty">No calvos this week yet.</li>`;
+      return;
+    }
+
+    // Fetch ratings for this week's calvos
+    const ratingPromises = thisWeek.map(a => {
+      const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+      return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
+    });
+    const allRatings = await Promise.all(ratingPromises);
+
+    const ranked = thisWeek
+      .map((a, i) => ({
+        ...a,
+        avg: allRatings[i].count >= 3 ? allRatings[i].total / allRatings[i].count : 0,
+        count: allRatings[i].count || 0
+      }))
+      .filter(a => a.count >= 3)
+      .sort((a, b) => b.avg - a.avg || b.count - a.count)
+      .slice(0, 3);
+
+    if (!ranked.length) {
+      list.innerHTML = `<li class="cotw-empty">No calvos have 3+ ratings this week yet.</li>`;
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    list.innerHTML = ranked.map((a, i) => {
+      const imgHtml = a.imgSrc
+        ? `<div class="cotw-img"><img src="${a.imgSrc}" alt="${escHtml(a.name||'')}" /></div>`
+        : `<div class="cotw-img">🔆</div>`;
+      return `<li class="cotw-item">
+        <span class="cotw-medal">${medals[i]}</span>
+        ${imgHtml}
+        <div class="cotw-info">
+          <div class="cotw-name">${escHtml(a.name || '—')}</div>
+          <div class="cotw-score">🔆 ${a.avg.toFixed(2)} · ${a.count} ${a.count === 1 ? 'vote' : 'votes'}</div>
+        </div>
+      </li>`;
+    }).join('');
+  }
+
+  // ── EMAIL SUBSCRIPTIONS ────────────────────────────────────
+  async function subscribeEmail() {
+    const input = document.getElementById('emailInput');
+    const msg   = document.getElementById('emailMsg');
+    const email = (input.value || '').trim().toLowerCase();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      msg.textContent = 'Please enter a valid email.';
+      msg.style.color = 'var(--rust-light)';
+      return;
+    }
+
+    try {
+      // Use email as the key (replace . with _ for Firestore)
+      const key = email.replace(/\./g, '_');
+      const snap = await getDoc(doc(db, 'subscribers', key));
+      if (snap.exists()) {
+        msg.textContent = "You're already subscribed! 🔆";
+        msg.style.color = 'var(--gold-light)';
+        input.value = '';
+        return;
+      }
+      await setDoc(doc(db, 'subscribers', key), {
+        email,
+        subscribedAt: new Date().toISOString()
+      });
+      msg.textContent = "You're subscribed! We'll let you know when the next calvo drops. 🔆";
+      msg.style.color = 'var(--gold-light)';
+      input.value = '';
+    } catch (e) {
+      msg.textContent = 'Something went wrong. Try again.';
+      msg.style.color = 'var(--rust-light)';
+    }
+  }
+
   // ── INIT ──────────────────────────────────────────────────
   // Expose globals needed by inline onclick handlers
   window.openOwnerPanel  = openOwnerPanel;
@@ -4250,6 +4530,7 @@
   window.closeAnnModal   = closeAnnModal;
   window.saveAnnouncement  = saveAnnouncement;
   window.clearAnnouncement = clearAnnouncement;
+  window.subscribeEmail    = subscribeEmail;
   window.openAccount     = openAccount;
   window.closeAccount    = closeAccount;
   window.toggleAccountMode = toggleAccountMode;
@@ -4277,6 +4558,7 @@
   await updateStatCount();
   await renderAnnouncement();
   await renderHallOfFame();
+  await renderCOTW();
 
   // Init shine hover effects
   initShineHover('heroShineStars');
