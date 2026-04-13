@@ -18,6 +18,10 @@
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    (function() { emailjs.init({ publicKey: 'uVnn6cHClpxi0LdYZ' }); })();
+  </script>
   <style>
     :root {
       --cream: #f5efe6;
@@ -2991,6 +2995,9 @@
     publishBtn.disabled = false;
     publishBtn.textContent = t('publishBtn');
 
+    // Fire-and-forget email notifications — don't block the UI
+    notifySubscribers(name, desc);
+
     await renderHero();
     await renderArchive();
     await updateStatCount();
@@ -4464,6 +4471,10 @@
   }
 
   // ── EMAIL SUBSCRIPTIONS ────────────────────────────────────
+  const EMAILJS_SERVICE  = 'service_jr4x32b';
+  const EMAILJS_WELCOME  = 'template_zaqdz06';
+  const EMAILJS_NOTIFY   = 'template_mk3b3px';
+
   async function subscribeEmail() {
     const input = document.getElementById('emailInput');
     const msg   = document.getElementById('emailMsg');
@@ -4475,26 +4486,72 @@
       return;
     }
 
+    const submitBtn = document.querySelector('.email-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '…';
+
     try {
-      // Use email as the key (replace . with _ for Firestore)
-      const key = email.replace(/\./g, '_');
+      const key = email.replace(/[.@]/g, '_');
       const snap = await getDoc(doc(db, 'subscribers', key));
+
       if (snap.exists()) {
         msg.textContent = "You're already subscribed! 🔆";
         msg.style.color = 'var(--gold-light)';
         input.value = '';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Notify me';
         return;
       }
+
+      // Save to Firestore
       await setDoc(doc(db, 'subscribers', key), {
         email,
         subscribedAt: new Date().toISOString()
       });
-      msg.textContent = "You're subscribed! We'll let you know when the next calvo drops. 🔆";
+
+      // Send welcome email via EmailJS
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_WELCOME, {
+        to_email: email,
+        to_name:  email.split('@')[0]
+      });
+
+      msg.textContent = "You're subscribed! Check your inbox for a confirmation. 🔆";
       msg.style.color = 'var(--gold-light)';
       input.value = '';
     } catch (e) {
+      console.error('subscribe error:', e);
       msg.textContent = 'Something went wrong. Try again.';
       msg.style.color = 'var(--rust-light)';
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Notify me';
+  }
+
+  async function notifySubscribers(calvoName, calvoDesc) {
+    try {
+      const snap = await getDocs(collection(db, 'subscribers'));
+      const subscribers = snap.docs.map(d => d.data());
+      if (!subscribers.length) return;
+
+      const siteUrl = window.location.href;
+
+      // Send in batches of 5 to avoid rate limits
+      for (let i = 0; i < subscribers.length; i += 5) {
+        const batch = subscribers.slice(i, i + 5);
+        await Promise.all(batch.map(sub =>
+          emailjs.send(EMAILJS_SERVICE, EMAILJS_NOTIFY, {
+            to_email:   sub.email,
+            calvo_name: calvoName,
+            calvo_desc: calvoDesc || 'A new calvo has been crowned!',
+            site_url:   siteUrl
+          }).catch(e => console.warn('Failed to notify', sub.email, e))
+        ));
+        // Small delay between batches
+        if (i + 5 < subscribers.length) await new Promise(r => setTimeout(r, 500));
+      }
+    } catch (e) {
+      console.error('notifySubscribers error:', e);
     }
   }
 
