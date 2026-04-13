@@ -451,6 +451,7 @@
       background: var(--warm-white);
       box-shadow: 4px 4px 0 var(--gold);
       animation: fadeSlide 0.7s 0.3s ease both;
+      overflow: hidden;
     }
 
     .hof-header {
@@ -2191,8 +2192,11 @@
       .archive-card { min-width: 130px; flex-shrink: 0; display: block; }
       .archive-card:nth-child(n+4) { display: block; }
       .archive-card-img { width: 100%; height: 100px; aspect-ratio: unset; }
-      .hof-cards { grid-template-columns: repeat(3, 1fr); }
-      .hof-card:nth-child(n+4) { display: none; }
+      .hof-cards { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .hof-cards::-webkit-scrollbar { display: none; }
+      .hof-card { min-width: 130px; flex-shrink: 0; display: block; }
+      .hof-card:nth-child(n+4) { display: block; }
+      .hof-card-img { width: 100%; height: 100px; aspect-ratio: unset; flex-shrink: 0; }
       .admin-grid { grid-template-columns: 1fr; }
       .header-main { flex-direction: column; gap: 0.2rem; }
       .admin-toggle-wrap { position: static; margin-top: 0.5rem; }
@@ -3869,8 +3873,9 @@
         errEl.textContent = 'Username must contain "CALVO".';
         return;
       }
-      // Silent block: cannot contain "diego" (case-insensitive)
-      if (username.toLowerCase().includes('diego')) {
+      // Silent block: forbidden substrings (case-insensitive)
+      const blocked = ['diego', 'pepe', 'joseluis', 'jose', 'bbva'];
+      if (blocked.some(w => username.toLowerCase().includes(w))) {
         errEl.textContent = 'That username is not available.';
         return;
       }
@@ -3938,6 +3943,7 @@
     const list = document.getElementById('commentList');
     if (!list) return;
     const comments = await loadComments(key);
+    const isOwner = !!(currentUser && currentUser.username === OWNER_USERNAME && ownerAuthed);
     if (!comments.length) {
       list.innerHTML = `<div class="comment-empty">No comments yet. Be the first! 🔆</div>`;
       return;
@@ -3945,8 +3951,9 @@
     list.innerHTML = comments.map(c => {
       const d = new Date(c.createdAt);
       const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      const showDel = isOwner;
       return `<div class="comment-item">
-        <button class="comment-delete" onclick="deleteComment('${key}','${c.id}')">✕</button>
+        ${showDel ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentHero('${key}','${c.id}')">✕</button>` : ''}
         <div class="comment-author">${escHtml(c.username)}</div>
         <div class="comment-text">${escHtml(c.text)}</div>
         <div class="comment-time">${timeStr}</div>
@@ -3984,10 +3991,11 @@
   }
 
   async function renderModalComments(key) {
-    // Read-only view of comments in the archive modal
     const list = document.getElementById('modalCommentList');
     if (!list) return;
     const comments = await loadComments(key);
+    const isOwner = !!(currentUser && currentUser.username === OWNER_USERNAME && ownerAuthed);
+
     if (!comments.length) {
       list.innerHTML = `<div class="comment-empty">No comments on this calvo.</div>`;
       return;
@@ -3996,16 +4004,12 @@
       const d = new Date(c.createdAt);
       const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       return `<div class="comment-item">
-        <button class="comment-delete" onclick="deleteComment('${key}','${c.id}');renderModalComments('${key}')">✕</button>
+        ${isOwner ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentModal('${key}','${c.id}')">✕</button>` : ''}
         <div class="comment-author">${escHtml(c.username)}</div>
         <div class="comment-text">${escHtml(c.text)}</div>
         <div class="comment-time">${timeStr}</div>
       </div>`;
     }).join('');
-
-    // Show admin delete buttons if applicable
-    const section = document.getElementById('modalCommentsSection');
-    if (section) section.classList.toggle('is-admin', !!adminAuthed);
   }
 
   // ── DELETE CALVO (ADMIN) ────────────────────────────────────
@@ -4156,6 +4160,20 @@
     }
   }
 
+  // Called from inline ✕ on hero comment list
+  async function ownerDeleteCommentHero(key, id) {
+    if (!ownerAuthed) return;
+    await deleteDoc(doc(db, 'comments', key, 'items', id));
+    await renderComments(key);
+  }
+
+  // Called from inline ✕ on archive modal comment list
+  async function ownerDeleteCommentModal(key, id) {
+    if (!ownerAuthed) return;
+    await deleteDoc(doc(db, 'comments', key, 'items', id));
+    await renderModalComments(key);
+  }
+
   async function loadOwnerAccounts() {
     const loading = document.getElementById('ownerAccountsLoading');
     const list    = document.getElementById('ownerAccountsList');
@@ -4207,6 +4225,8 @@
   window.checkOwnerCode  = checkOwnerCode;
   window.ownerTab        = ownerTab;
   window.ownerDeleteComment = ownerDeleteComment;
+  window.ownerDeleteCommentHero = ownerDeleteCommentHero;
+  window.ownerDeleteCommentModal = ownerDeleteCommentModal;
   window.ownerDeleteAccount = ownerDeleteAccount;
   window.closeCalvle = closeCalvle;
   window.openCalvle  = openCalvle;
