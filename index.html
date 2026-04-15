@@ -2019,6 +2019,9 @@
     .comment-delete:hover { color: var(--rust); }
     .is-admin .comment-delete { display: block; }
 
+    .comment-delete.own { color: var(--border); }
+    .comment-delete.own:hover { color: var(--muted); }
+
     .comment-empty {
       font-family: 'DM Mono', monospace;
       font-size: 0.65rem;
@@ -3106,7 +3109,7 @@
     const data = await loadRatings(key);
     const prev = (data.voters || {})[uid];
 
-    if (prev === value) return; // same rating, ignore
+    if (prev === value) return; // same star clicked — removeRating handles this via renderStars onclick
 
     // Adjust totals
     if (prev) data.total = (data.total || 0) - prev;
@@ -3129,18 +3132,54 @@
 
   function renderStars(container, avgId, userRating, avg, count, key, context) {
     const stars = container.querySelectorAll('.shine-star');
+    // Hero: show user's own rating (blank if none). Modal: show avg.
+    const displayVal = context === 'hero' ? userRating : Math.round(avg);
     stars.forEach(s => {
       const v = parseInt(s.getAttribute('data-v'));
-      s.classList.toggle('lit', v <= Math.round(avg));
-      s.classList.toggle('user-pick', v === userRating);
-      s.onclick = () => rate(context === 'hero' ? null : key, v);
+      s.classList.toggle('lit', v <= displayVal);
+      s.classList.toggle('user-pick', context === 'hero' && v === userRating);
+      s.onclick = () => {
+        const rateKey = context === 'hero' ? null : key;
+        // Clicking your own active rating removes it
+        if (context === 'hero' && v === userRating) removeRating(rateKey);
+        else rate(rateKey, v);
+      };
     });
-    const avgEl = document.getElementById(context === 'hero' ? 'heroShineAvg' : 'modalShineAvg');
+    const avgEl = document.getElementById(avgId);
     if (avgEl) {
-      avgEl.textContent = count > 0
-        ? `${avg.toFixed(1)} / 5  (${count} ${count === 1 ? 'rating' : 'ratings'})`
-        : 'No ratings yet';
+      if (context === 'hero') {
+        avgEl.textContent = userRating
+          ? `Your rating: ${userRating}/5`
+          : count > 0
+            ? `Avg: ${avg.toFixed(1)}/5 (${count} ${count === 1 ? 'rating' : 'ratings'})`
+            : 'Rate this calvo!';
+      } else {
+        avgEl.textContent = count > 0
+          ? `${avg.toFixed(1)} / 5  (${count} ${count === 1 ? 'rating' : 'ratings'})`
+          : 'No ratings yet';
+      }
     }
+  }
+
+  async function removeRating(key) {
+    if (!key) {
+      const s = await loadState();
+      if (!s.date) return;
+      key = s.date.replace(/[:.]/g, '-');
+    }
+    const uid = getUserId();
+    const data = await loadRatings(key);
+    const prev = (data.voters || {})[uid];
+    if (!prev) return;
+
+    data.total = Math.max(0, (data.total || 0) - prev);
+    data.count = Math.max(0, (data.count || 0) - 1);
+    delete data.voters[uid];
+
+    await setDoc(doc(db, 'ratings', key), data);
+    renderShineBar('hero', key);
+    renderHallOfFame();
+    renderCOTW();
   }
 
   async function renderShineBar(context, key) {
@@ -4094,6 +4133,43 @@
     checkIfOwner();
   }
 
+  // ── COMMENT RANKS ──────────────────────────────────────────
+  function getCommentRank(count) {
+    if (count >= 250) return { badge: '🔆', title: 'Sunburnt Calvo' };
+    if (count >= 100) return { badge: '🔆', title: 'Bald Legend' };
+    if (count >=  50) return { badge: '⭐', title: 'Calvo Aficionado' };
+    if (count >=  25) return { badge: '☀️', title: 'Shiny Individual' };
+    if (count >=  10) return { badge: '🥚', title: 'Beginner Calvo' };
+    return null;
+  }
+
+  // Count total comments across all calvos for a given username
+  const _commentCountCache = {};
+  async function getCommentCount(username) {
+    if (_commentCountCache[username] !== undefined) return _commentCountCache[username];
+    try {
+      const allArchive = await loadAllArchive();
+      let total = 0;
+      await Promise.all(allArchive.map(async a => {
+        const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+        if (!key) return;
+        const q = query(collection(db, 'comments', key, 'items'));
+        const snap = await getDocs(q);
+        snap.docs.forEach(d => { if (d.data().username === username) total++; });
+      }));
+      _commentCountCache[username] = total;
+      return total;
+    } catch { return 0; }
+  }
+
+  async function deleteOwnComment(key, id) {
+    if (!currentUser) return;
+    await deleteDoc(doc(db, 'comments', key, 'items', id));
+    // Bust cache for this user
+    delete _commentCountCache[currentUser.username];
+    await renderComments(key);
+  }
+
   // ── COMMENTS ───────────────────────────────────────────────
   async function loadComments(key) {
     try {
@@ -4125,17 +4201,29 @@
     if (!list) return;
     const comments = await loadComments(key);
     const isOwner = isOwnerUser() && ownerAuthed;
+
     if (!comments.length) {
       list.innerHTML = `<div class="comment-empty">No comments yet. Be the first! 🔆</div>`;
       return;
     }
+
+    // Fetch comment counts for badge display (batch unique usernames)
+    const usernames = [...new Set(comments.map(c => c.username))];
+    const counts = {};
+    await Promise.all(usernames.map(async u => { counts[u] = await getCommentCount(u); }));
+
     list.innerHTML = comments.map(c => {
       const d = new Date(c.createdAt);
       const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-      const showDel = isOwner;
+      const rank = getCommentRank(counts[c.username] || 0);
+      const badge = rank ? `<span title="${rank.title}" style="font-size:0.8rem;margin-left:0.3rem;">${rank.badge}</span>` : '';
+      const isOwn = currentUser && currentUser.username === c.username;
+      const showOwnerDel = isOwner;
+      const showOwnDel = isOwn && !isOwner; // own delete only if not already showing owner del
       return `<div class="comment-item">
-        ${showDel ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentHero('${key}','${c.id}')">✕</button>` : ''}
-        <div class="comment-author">${escHtml(c.username)}</div>
+        ${showOwnerDel ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentHero('${key}','${c.id}')">✕</button>` : ''}
+        ${showOwnDel ? `<button class="comment-delete" style="display:block;color:var(--muted);" onclick="deleteOwnComment('${key}','${c.id}')">✕</button>` : ''}
+        <div class="comment-author">${escHtml(c.username)}${badge}</div>
         <div class="comment-text">${escHtml(c.text)}</div>
         <div class="comment-time">${timeStr}</div>
       </div>`;
@@ -4181,16 +4269,34 @@
       list.innerHTML = `<div class="comment-empty">No comments on this calvo.</div>`;
       return;
     }
+
+    const usernames = [...new Set(comments.map(c => c.username))];
+    const counts = {};
+    await Promise.all(usernames.map(async u => { counts[u] = await getCommentCount(u); }));
+
     list.innerHTML = comments.map(c => {
       const d = new Date(c.createdAt);
       const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      const rank = getCommentRank(counts[c.username] || 0);
+      const badge = rank ? `<span title="${rank.title}" style="font-size:0.8rem;margin-left:0.3rem;">${rank.badge}</span>` : '';
+      const isOwn = currentUser && currentUser.username === c.username;
+      const showOwnerDel = isOwner;
+      const showOwnDel = isOwn && !isOwner;
       return `<div class="comment-item">
-        ${isOwner ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentModal('${key}','${c.id}')">✕</button>` : ''}
-        <div class="comment-author">${escHtml(c.username)}</div>
+        ${showOwnerDel ? `<button class="comment-delete" style="display:block" onclick="ownerDeleteCommentModal('${key}','${c.id}')">✕</button>` : ''}
+        ${showOwnDel ? `<button class="comment-delete" style="display:block;color:var(--muted);" onclick="deleteOwnCommentModal('${key}','${c.id}')">✕</button>` : ''}
+        <div class="comment-author">${escHtml(c.username)}${badge}</div>
         <div class="comment-text">${escHtml(c.text)}</div>
         <div class="comment-time">${timeStr}</div>
       </div>`;
     }).join('');
+  }
+
+  async function deleteOwnCommentModal(key, id) {
+    if (!currentUser) return;
+    await deleteDoc(doc(db, 'comments', key, 'items', id));
+    delete _commentCountCache[currentUser.username];
+    await renderModalComments(key);
   }
 
   // ── DELETE CALVO (ADMIN) ────────────────────────────────────
@@ -4595,6 +4701,8 @@
   window.logout          = logout;
   window.postComment     = postComment;
   window.deleteComment   = deleteComment;
+  window.deleteOwnComment = deleteOwnComment;
+  window.deleteOwnCommentModal = deleteOwnCommentModal;
   window.renderModalComments = renderModalComments;
   window.deleteCurrentCalvo = deleteCurrentCalvo;
   window.setLang = function(lang) {
