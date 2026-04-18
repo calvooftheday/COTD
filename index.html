@@ -4997,11 +4997,28 @@
   renderDate();
   applyTranslations();
   await renderHero();
+  // Render COTW first so winner keys are saved before archive colours cards
+  await renderCOTW();
+  // Now bust cache so renderArchive gets the freshly saved winners
+  _cotwWinnerKeys = null;
   await renderArchive();
   await updateStatCount();
   await renderAnnouncement();
   await renderHallOfFame();
-  await renderCOTW();
+
+  // ── WEEKLY RESET: check every 60s if we've crossed into a new week ──
+  let _lastWeekKey = getWeekKey();
+  setInterval(async () => {
+    const nowKey = getWeekKey();
+    if (nowKey !== _lastWeekKey) {
+      _lastWeekKey = nowKey;
+      // New week started — bust cache, re-crown last week's winner, reset display
+      _cotwWinnerKeys = null;
+      await renderCOTW();
+      _cotwWinnerKeys = null;
+      await renderArchive();
+    }
+  }, 60 * 1000);
 
   // Init shine hover effects
   initShineHover('heroShineStars');
