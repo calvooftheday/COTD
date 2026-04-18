@@ -1163,12 +1163,23 @@
     }
 
     .archive-cards {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
       gap: 0;
     }
 
+    .archive-cards::-webkit-scrollbar { height: 4px; }
+    .archive-cards::-webkit-scrollbar-track { background: transparent; }
+    .archive-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
     .archive-card {
+      min-width: 160px;
+      width: 160px;
+      flex-shrink: 0;
       padding: 1.2rem;
       border-right: 1px solid var(--border);
       cursor: pointer;
@@ -2329,6 +2340,121 @@
       min-height: 1em;
     }
 
+    /* ── COTW WINNER STYLING ── */
+    .archive-card.cotw-winner {
+      background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(232,201,111,0.06) 100%);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .archive-card.cotw-winner .archive-card-name::after {
+      content: ' 🏅';
+    }
+
+    .cotw-winner-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 0.1rem 0.45rem;
+      border-radius: 2px;
+      margin-left: 0.6rem;
+      vertical-align: middle;
+      line-height: 1.6;
+    }
+
+    /* ── SUGGESTION BOX ── */
+    .suggestion-strip {
+      margin-top: 2rem;
+      border: 2px solid var(--ink);
+      background: var(--warm-white);
+      box-shadow: 4px 4px 0 var(--rust);
+      animation: fadeSlide 0.7s 0.35s ease both;
+    }
+
+    .suggestion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid var(--ink);
+      background: var(--rust);
+    }
+
+    .suggestion-header span {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    .suggestion-header small {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .suggestion-form {
+      padding: 1.5rem;
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .suggestion-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.8rem;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+
+    .suggestion-input:focus { border-color: var(--rust); }
+    .suggestion-input::placeholder { color: var(--muted); }
+
+    .suggestion-submit {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--rust);
+      color: var(--cream);
+      border: none;
+      padding: 0.55rem 1.2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .suggestion-submit:hover { background: var(--rust-light); }
+
+    .suggestion-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--rust);
+      padding: 0 1.5rem 1rem;
+      min-height: 1em;
+    }
+
+    /* Admin suggestion panel tab */
+    .suggestion-inbox {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .hero { grid-template-columns: 1fr; }
@@ -2336,11 +2462,7 @@
       .about-section { grid-template-columns: 1fr; }
       .about-block + .about-block { border-left: none; border-top: 2px solid var(--ink); }
       .cotw-block { border-left: none; border-top: 2px solid var(--ink); }
-      .archive-cards { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-      .archive-cards::-webkit-scrollbar { display: none; }
-      .archive-card { min-width: 130px; flex-shrink: 0; display: block; }
-      .archive-card:nth-child(n+4) { display: block; }
-      .archive-card-img { width: 100%; height: 100px; aspect-ratio: unset; }
+      .archive-card-img { height: 100px; aspect-ratio: unset; }
       .hof-cards { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
       .hof-cards::-webkit-scrollbar { display: none; }
       .hof-card { min-width: 130px; flex-shrink: 0; display: block; }
@@ -2603,6 +2725,19 @@
       <!-- filled by JS -->
     </div>
   </div>
+  <!-- SUGGESTION BOX -->
+  <div class="suggestion-strip">
+    <div class="suggestion-header">
+      <span>💡 Nominate a Calvo</span>
+      <small>Anonymous · Your suggestion goes to the admin</small>
+    </div>
+    <div class="suggestion-form">
+      <input class="suggestion-input" id="suggestionInput" placeholder="Who deserves to be Calvo of the Day? Name + reason…" maxlength="200"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){submitSuggestion();}" />
+      <button class="suggestion-submit" onclick="submitSuggestion()">Submit</button>
+    </div>
+    <div class="suggestion-msg" id="suggestionMsg"></div>
+  </div>
 
 </main>
 
@@ -2682,6 +2817,7 @@
       <div class="owner-tabs">
         <button class="owner-tab active" onclick="ownerTab('comments')">Comments</button>
         <button class="owner-tab" onclick="ownerTab('accounts')">Accounts</button>
+        <button class="owner-tab" onclick="ownerTab('suggestions')">💡 Ideas</button>
       </div>
       <div class="owner-tab-content active" id="ownerTabComments">
         <div class="owner-loading" id="ownerCommentsLoading">Loading…</div>
@@ -2690,6 +2826,10 @@
       <div class="owner-tab-content" id="ownerTabAccounts">
         <div class="owner-loading" id="ownerAccountsLoading">Loading…</div>
         <div id="ownerAccountsList"></div>
+      </div>
+      <div class="owner-tab-content" id="ownerTabSuggestions">
+        <div class="owner-loading" id="ownerSuggestionsLoading">Loading…</div>
+        <div id="ownerSuggestionsList"></div>
       </div>
     </div>
   </div>
@@ -3621,33 +3761,35 @@
   }
 
   async function renderArchive() {
-    const archive = await loadArchive();
+    const archive = await loadAllArchive(); // ALL calvos, no limit
     const container = document.getElementById('archiveCards');
 
     if (!archive.length) {
-      container.innerHTML = `<div style="padding:2rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);grid-column:1/-1;">${t('noArchive')}</div>`;
+      container.innerHTML = `<div style="padding:2rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);">${t('noArchive')}</div>`;
       return;
     }
 
     window._archiveData = archive;
 
-    // Fetch ratings for shimmer check
-    const ratingSnaps = await Promise.all(archive.slice(0,5).map(a => {
+    // Fetch ratings for shimmer check (all)
+    const ratingSnaps = await Promise.all(archive.map(a => {
       const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
       return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
     }));
 
-    container.innerHTML = archive.slice(0, 5).map((a, i) => {
+    const locale = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES';
+
+    container.innerHTML = archive.map((a, i) => {
       const d = a.date ? new Date(a.date) : null;
-      const dateStr = d ? d.toLocaleDateString(currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES', { day:'numeric', month: 'short', year: 'numeric' }) : '—';
-      const imgContent = a.imgSrc ? `<img src="${a.imgSrc}" alt="${a.name || ''}" />` : '🔆';
-      const r = ratingSnaps[i];
+      const dateStr = d ? d.toLocaleDateString(locale, { day:'numeric', month:'short', year:'numeric' }) : '—';
+      const imgContent = a.imgSrc ? `<img src="${escHtml(a.imgSrc)}" alt="${escHtml(a.name || '')}" />` : '🔆';
+      const r = ratingSnaps[i] || { total: 0, count: 0 };
       const avg = r.count >= 3 ? r.total / r.count : 0;
       const isMax = avg === 5.0 && r.count >= 3;
       return `
-        <div class="archive-card${isMax ? ' shine-overload' : ''}" onclick="openCalvoModal(${i})" title="${a.name || ''}">
+        <div class="archive-card${isMax ? ' shine-overload' : ''}" onclick="openCalvoModal(${i})" title="${escHtml(a.name || '')}">
           <div class="archive-card-img">${imgContent}</div>
-          <div class="archive-card-name">${a.name || '—'}</div>
+          <div class="archive-card-name">${escHtml(a.name || '—')}</div>
           <div class="archive-card-date">${dateStr}</div>
         </div>`;
     }).join('');
@@ -4381,17 +4523,20 @@
     ownerActiveTab = tab;
     document.querySelectorAll('.owner-tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.owner-tab-content').forEach(c => c.classList.remove('active'));
-    const tabEl = tab === 'comments' ? document.getElementById('ownerTabComments') : document.getElementById('ownerTabAccounts');
+    const tabMap = { comments: 'ownerTabComments', accounts: 'ownerTabAccounts', suggestions: 'ownerTabSuggestions' };
+    const tabEl = document.getElementById(tabMap[tab]);
     if (tabEl) tabEl.classList.add('active');
     const tabs = document.querySelectorAll('.owner-tab');
     if (tab === 'comments' && tabs[0]) tabs[0].classList.add('active');
     if (tab === 'accounts' && tabs[1]) tabs[1].classList.add('active');
+    if (tab === 'suggestions' && tabs[2]) tabs[2].classList.add('active');
     loadOwnerTab(tab);
   }
 
   async function loadOwnerTab(tab) {
     if (tab === 'comments') await loadOwnerComments();
-    else await loadOwnerAccounts();
+    else if (tab === 'accounts') await loadOwnerAccounts();
+    else if (tab === 'suggestions') await loadOwnerSuggestions();
   }
 
   async function loadOwnerComments() {
@@ -4508,6 +4653,79 @@
     // If the deleted user is currently logged in, log them out
     if (currentUser && currentUser.username === username) logout();
     await loadOwnerAccounts();
+  }
+
+  // ── SUGGESTION BOX ─────────────────────────────────────────
+  async function submitSuggestion() {
+    const input = document.getElementById('suggestionInput');
+    const msg   = document.getElementById('suggestionMsg');
+    const text  = (input.value || '').trim();
+
+    if (!text) { msg.textContent = 'Please write something first!'; return; }
+
+    try {
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+      await setDoc(doc(db, 'suggestions', id), {
+        text,
+        submittedAt: new Date().toISOString(),
+        seen: false
+      });
+      input.value = '';
+      msg.textContent = '🔆 Suggestion submitted! Thanks for the nomination.';
+      msg.style.color = 'var(--rust)';
+      setTimeout(() => { msg.textContent = ''; }, 3500);
+    } catch (e) {
+      msg.textContent = 'Something went wrong. Try again.';
+    }
+  }
+
+  async function loadOwnerSuggestions() {
+    const loading = document.getElementById('ownerSuggestionsLoading');
+    const list    = document.getElementById('ownerSuggestionsList');
+    if (!loading || !list) return;
+    loading.style.display = 'block';
+    list.innerHTML = '';
+
+    try {
+      const q = query(collection(db, 'suggestions'), orderBy('submittedAt', 'desc'));
+      const snap = await getDocs(q);
+      const suggestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      loading.style.display = 'none';
+
+      if (!suggestions.length) {
+        list.innerHTML = `<div class="owner-empty">No suggestions yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = suggestions.map(s => {
+        const d = new Date(s.submittedAt);
+        const timeStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const newBadge = !s.seen ? `<span style="font-family:'DM Mono',monospace;font-size:0.55rem;background:var(--rust);color:var(--cream);padding:0.1rem 0.4rem;border-radius:2px;margin-left:0.4rem;">NEW</span>` : '';
+        return `<div class="owner-list-item">
+          <div class="owner-item-info">
+            <div class="owner-item-title">Anonymous${newBadge}</div>
+            <div class="owner-item-body">${escHtml(s.text)}</div>
+            <div class="owner-item-meta">${timeStr}</div>
+          </div>
+          <button class="owner-del-btn" onclick="ownerDeleteSuggestion('${s.id}')">Delete</button>
+        </div>`;
+      }).join('');
+
+      // Mark all as seen
+      await Promise.all(suggestions.filter(s => !s.seen).map(s =>
+        setDoc(doc(db, 'suggestions', s.id), { ...s, seen: true })
+      ));
+    } catch (e) {
+      loading.style.display = 'none';
+      list.innerHTML = `<div class="owner-empty">Error loading suggestions.</div>`;
+    }
+  }
+
+  async function ownerDeleteSuggestion(id) {
+    if (!ownerAuthed) return;
+    await deleteDoc(doc(db, 'suggestions', id));
+    await loadOwnerSuggestions();
   }
 
   // ── CALVO OF THE WEEK ──────────────────────────────────────
@@ -4671,6 +4889,8 @@
   window.ownerDeleteCommentHero = ownerDeleteCommentHero;
   window.ownerDeleteCommentModal = ownerDeleteCommentModal;
   window.ownerDeleteAccount = ownerDeleteAccount;
+  window.ownerDeleteSuggestion = ownerDeleteSuggestion;
+  window.submitSuggestion  = submitSuggestion;
   window.closeCalvle = closeCalvle;
   window.openCalvle  = openCalvle;
   window.toggleAdmin   = toggleAdmin;
