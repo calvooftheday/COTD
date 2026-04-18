@@ -3761,7 +3761,7 @@
   }
 
   async function renderArchive() {
-    const archive = await loadAllArchive(); // ALL calvos, no limit
+    const archive = await loadAllArchive();
     const container = document.getElementById('archiveCards');
 
     if (!archive.length) {
@@ -3771,11 +3771,14 @@
 
     window._archiveData = archive;
 
-    // Fetch ratings for shimmer check (all)
-    const ratingSnaps = await Promise.all(archive.map(a => {
-      const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
-      return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
-    }));
+    // Load COTW winners and ratings in parallel
+    const [cotwWinners, ratingSnaps] = await Promise.all([
+      loadCotwWinners(),
+      Promise.all(archive.map(a => {
+        const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+        return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
+      }))
+    ]);
 
     const locale = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'ca-ES';
 
@@ -3786,8 +3789,11 @@
       const r = ratingSnaps[i] || { total: 0, count: 0 };
       const avg = r.count >= 3 ? r.total / r.count : 0;
       const isMax = avg === 5.0 && r.count >= 3;
+      const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+      const isCOTW = key && cotwWinners.has(key);
+      const classes = ['archive-card', isMax ? 'shine-overload' : '', isCOTW ? 'cotw-winner' : ''].filter(Boolean).join(' ');
       return `
-        <div class="archive-card${isMax ? ' shine-overload' : ''}" onclick="openCalvoModal(${i})" title="${escHtml(a.name || '')}">
+        <div class="${classes}" onclick="openCalvoModal(${i})" title="${escHtml(a.name || '')}">
           <div class="archive-card-img">${imgContent}</div>
           <div class="archive-card-name">${escHtml(a.name || '—')}</div>
           <div class="archive-card-date">${dateStr}</div>
@@ -3795,7 +3801,7 @@
     }).join('');
   }
 
-  function openCalvoModal(index) {
+  async function openCalvoModal(index) {
     const a = (window._archiveData || [])[index];
     if (!a) return;
 
@@ -3804,9 +3810,17 @@
     const dateStr = d ? d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '—';
 
     document.getElementById('calvoModalDate').textContent = dateStr;
-    document.getElementById('calvoModalName').textContent = a.name || '—';
     document.getElementById('calvoModalIssue').textContent = a.issue || '';
     document.getElementById('calvoModalDesc').textContent = a.desc || '';
+
+    // Store the vote key for this entry
+    const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
+
+    // COTW winner badge next to name
+    const nameEl = document.getElementById('calvoModalName');
+    const winners = await loadCotwWinners();
+    const isCOTW = key && winners.has(key);
+    nameEl.innerHTML = escHtml(a.name || '—') + (isCOTW ? ` <span class="cotw-winner-badge">🏅 COTW Winner</span>` : '');
 
     const img = document.getElementById('calvoModalImg');
     const ph  = document.getElementById('calvoModalPlaceholder');
@@ -3819,8 +3833,6 @@
       ph.style.display = 'flex';
     }
 
-    // Store the vote key for this entry
-    const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
     window._currentModalKey = key;
     if (key) renderShineBar('modal', key);
 
@@ -4731,11 +4743,28 @@
   // ── CALVO OF THE WEEK ──────────────────────────────────────
   function getWeekStart() {
     const now = new Date();
-    const day = now.getDay(); // 0=Sun
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
-    const mon = new Date(now.setDate(diff));
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(now);
+    mon.setDate(diff);
     mon.setHours(0, 0, 0, 0);
     return mon;
+  }
+
+  function getWeekKey() {
+    const w = getWeekStart();
+    return `${w.getFullYear()}_${w.getMonth() + 1}_${w.getDate()}`;
+  }
+
+  // Load all COTW winner keys ever stored
+  let _cotwWinnerKeys = null;
+  async function loadCotwWinners() {
+    if (_cotwWinnerKeys) return _cotwWinnerKeys;
+    try {
+      const snap = await getDocs(collection(db, 'cotw_winners'));
+      _cotwWinnerKeys = new Set(snap.docs.map(d => d.data().winnerKey).filter(Boolean));
+    } catch { _cotwWinnerKeys = new Set(); }
+    return _cotwWinnerKeys;
   }
 
   async function renderCOTW() {
@@ -4745,18 +4774,13 @@
     const weekStart = getWeekStart();
     const archive = await loadAllArchive();
 
-    // Filter to calvos published this week
-    const thisWeek = archive.filter(a => {
-      if (!a.date) return false;
-      return new Date(a.date) >= weekStart;
-    });
+    const thisWeek = archive.filter(a => a.date && new Date(a.date) >= weekStart);
 
     if (!thisWeek.length) {
       list.innerHTML = `<li class="cotw-empty">No calvos this week yet.</li>`;
       return;
     }
 
-    // Fetch ratings for this week's calvos
     const ratingPromises = thisWeek.map(a => {
       const key = a.date ? a.date.replace(/[:.]/g, '-') : null;
       return key ? loadRatings(key) : Promise.resolve({ total: 0, count: 0 });
@@ -4767,7 +4791,8 @@
       .map((a, i) => ({
         ...a,
         avg: allRatings[i].count >= 3 ? allRatings[i].total / allRatings[i].count : 0,
-        count: allRatings[i].count || 0
+        count: allRatings[i].count || 0,
+        key: a.date ? a.date.replace(/[:.]/g, '-') : null
       }))
       .filter(a => a.count >= 3)
       .sort((a, b) => b.avg - a.avg || b.count - a.count)
@@ -4776,6 +4801,20 @@
     if (!ranked.length) {
       list.innerHTML = `<li class="cotw-empty">No calvos have 3+ ratings this week yet.</li>`;
       return;
+    }
+
+    // Save current #1 as this week's winner
+    if (ranked[0] && ranked[0].key) {
+      const weekKey = getWeekKey();
+      try {
+        await setDoc(doc(db, 'cotw_winners', weekKey), {
+          winnerKey: ranked[0].key,
+          winnerName: ranked[0].name || '—',
+          weekStart: weekStart.toISOString()
+        });
+        // Bust cache so archive re-checks
+        _cotwWinnerKeys = null;
+      } catch(e) {}
     }
 
     const medals = ['🥇', '🥈', '🥉'];
