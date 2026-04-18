@@ -4756,13 +4756,19 @@
     return `${w.getFullYear()}_${w.getMonth() + 1}_${w.getDate()}`;
   }
 
-  // Load all COTW winner keys ever stored
+  // Load all COTW winner keys ever stored (supports multiple per week for ties)
   let _cotwWinnerKeys = null;
   async function loadCotwWinners() {
     if (_cotwWinnerKeys) return _cotwWinnerKeys;
     try {
       const snap = await getDocs(collection(db, 'cotw_winners'));
-      _cotwWinnerKeys = new Set(snap.docs.map(d => d.data().winnerKey).filter(Boolean));
+      _cotwWinnerKeys = new Set();
+      snap.docs.forEach(d => {
+        const data = d.data();
+        // Support both old single winnerKey and new winnerKeys array
+        if (Array.isArray(data.winnerKeys)) data.winnerKeys.forEach(k => _cotwWinnerKeys.add(k));
+        else if (data.winnerKey) _cotwWinnerKeys.add(data.winnerKey);
+      });
     } catch { _cotwWinnerKeys = new Set(); }
     return _cotwWinnerKeys;
   }
@@ -4787,7 +4793,7 @@
     });
     const allRatings = await Promise.all(ratingPromises);
 
-    const ranked = thisWeek
+    const qualified = thisWeek
       .map((a, i) => ({
         ...a,
         avg: allRatings[i].count >= 3 ? allRatings[i].total / allRatings[i].count : 0,
@@ -4795,38 +4801,51 @@
         key: a.date ? a.date.replace(/[:.]/g, '-') : null
       }))
       .filter(a => a.count >= 3)
-      .sort((a, b) => b.avg - a.avg || b.count - a.count)
-      .slice(0, 3);
+      .sort((a, b) => b.avg - a.avg || b.count - a.count);
 
-    if (!ranked.length) {
+    if (!qualified.length) {
       list.innerHTML = `<li class="cotw-empty">No calvos have 3+ ratings this week yet.</li>`;
       return;
     }
 
-    // Save current #1 as this week's winner
-    if (ranked[0] && ranked[0].key) {
+    // Find the top avg, collect ALL entries that share it (ties at #1)
+    const topAvg = qualified[0].avg;
+    const winners = qualified.filter(a => Math.abs(a.avg - topAvg) < 0.0001);
+
+    // Build display list: all tied winners first (🥇 each), then runners-up up to 3 total
+    const display = [];
+    winners.forEach(a => display.push({ ...a, medal: '🥇', isTie: winners.length > 1 }));
+    // Fill remaining spots with next-ranked (non-tied)
+    const runnerUps = qualified.filter(a => Math.abs(a.avg - topAvg) >= 0.0001);
+    const runnerMedals = ['🥈', '🥉'];
+    runnerUps.slice(0, Math.max(0, 3 - winners.length)).forEach((a, i) => {
+      display.push({ ...a, medal: runnerMedals[i], isTie: false });
+    });
+
+    // Save all this week's winners (could be multiple) to Firestore
+    const winnerKeys = winners.map(a => a.key).filter(Boolean);
+    if (winnerKeys.length) {
       const weekKey = getWeekKey();
       try {
         await setDoc(doc(db, 'cotw_winners', weekKey), {
-          winnerKey: ranked[0].key,
-          winnerName: ranked[0].name || '—',
+          winnerKeys,
+          winnerNames: winners.map(a => a.name || '—'),
           weekStart: weekStart.toISOString()
         });
-        // Bust cache so archive re-checks
-        _cotwWinnerKeys = null;
+        _cotwWinnerKeys = null; // bust cache
       } catch(e) {}
     }
 
-    const medals = ['🥇', '🥈', '🥉'];
-    list.innerHTML = ranked.map((a, i) => {
+    list.innerHTML = display.map(a => {
       const imgHtml = a.imgSrc
         ? `<div class="cotw-img"><img src="${a.imgSrc}" alt="${escHtml(a.name||'')}" /></div>`
         : `<div class="cotw-img">🔆</div>`;
+      const tieLabel = a.isTie ? `<span style="font-family:'DM Mono',monospace;font-size:0.52rem;color:var(--gold);margin-left:0.3rem;letter-spacing:0.08em;">TIE</span>` : '';
       return `<li class="cotw-item">
-        <span class="cotw-medal">${medals[i]}</span>
+        <span class="cotw-medal">${a.medal}</span>
         ${imgHtml}
         <div class="cotw-info">
-          <div class="cotw-name">${escHtml(a.name || '—')}</div>
+          <div class="cotw-name">${escHtml(a.name || '—')}${tieLabel}</div>
           <div class="cotw-score">🔆 ${a.avg.toFixed(2)} · ${a.count} ${a.count === 1 ? 'vote' : 'votes'}</div>
         </div>
       </li>`;
