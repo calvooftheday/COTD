@@ -607,12 +607,13 @@
       <button class="lang-btn active" onclick="setLang('en')">EN</button>
       <button class="lang-btn" onclick="setLang('es')">ES</button>
       <button class="lang-btn" onclick="setLang('ca')">CA/VA</button>
-      <button class="lang-btn" id="headerAccountBtn" onclick="openAccount()" style="border-style:dashed;">👤 Log in</button>
+      <button class="lang-btn" id="headerAccountBtn" onclick="openAccountOrManage()" style="border-style:dashed;">👤 Log in</button>
     </div>
   </div>
   <div class="header-main">
     <div class="calvle-toggle-wrap">
       <button class="admin-toggle" onclick="openCalvle()">🔆 Calvle</button>
+      <button class="admin-toggle" id="idCardBtn" onclick="openIdCard()" style="display:none;margin-left:0.4rem;">🪪 ID</button>
     </div>
     <div>
       <div class="site-title">C<span id="secretO" onclick="toggleCalvoMode()">O</span>TD</div>
@@ -626,7 +627,7 @@
 
 <div class="calvo-mode-banner">🥚 calvo mode active — click the egg to disable</div>
 
-<!-- ACCOUNT MODAL -->
+<!-- ACCOUNT MODAL (register / login) -->
 <div class="account-overlay" id="accountOverlay" onclick="if(event.target===this)closeAccount()">
   <div class="account-modal">
     <button class="account-close" onclick="closeAccount()">✕</button>
@@ -645,6 +646,49 @@
     <div class="acct-actions">
       <button class="btn-primary" onclick="submitAccount()" id="acctSubmitBtn">Register</button>
       <button class="acct-switch" id="acctSwitchBtn" onclick="toggleAccountMode()">Already have an account? Log in</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE ACCOUNT MODAL -->
+<div class="account-overlay" id="manageOverlay" onclick="if(event.target===this)closeManage()">
+  <div class="account-modal" style="max-width:380px;">
+    <button class="account-close" onclick="closeManage()">✕</button>
+    <h3>My Account</h3>
+    <p class="acct-sub" id="manageUserSub">@username</p>
+    <div class="acct-field">
+      <label>Display Name <span style="color:var(--muted);font-size:0.55rem;">(shown in comments)</span></label>
+      <input type="text" id="manageDisplayName" placeholder="Your display name…" maxlength="40" autocomplete="off"
+        onkeydown="if(event.key==='Enter') saveDisplayName()" />
+    </div>
+    <div class="acct-error" id="manageMsg" style="color:var(--green);"></div>
+    <div style="margin-top:0.5rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn-primary" onclick="saveDisplayName()">Save Name</button>
+      <button class="btn-secondary" onclick="openIdCard()" style="font-size:0.65rem;padding:0.5rem 1rem;">🪪 Generate ID Card</button>
+      <button class="acct-switch" onclick="logoutFromManage()" style="color:var(--rust);">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ID CARD MODAL -->
+<div class="account-overlay" id="idCardOverlay" onclick="if(event.target===this)closeIdCard()">
+  <div class="account-modal" style="max-width:480px;">
+    <button class="account-close" onclick="closeIdCard()">✕</button>
+    <h3 style="margin-bottom:0.6rem;">🪪 Your Calvo ID</h3>
+    <p class="acct-sub">Upload a photo to generate your card</p>
+    <div class="acct-field">
+      <label>Profile Photo</label>
+      <div class="image-upload-zone" style="border-color:var(--border);background:var(--cream);padding:1.2rem;">
+        <input type="file" accept="image/*" id="idPhotoInput" onchange="handleIdPhoto(event)" />
+        <div class="upload-icon" style="font-size:1.5rem;">📸</div>
+        <p style="color:var(--muted);font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;">Click or drag a photo</p>
+        <img id="idPhotoPreview" style="width:60px;height:60px;object-fit:cover;border:2px solid var(--gold);border-radius:2px;margin:0.5rem auto 0;display:none;" alt="preview" />
+      </div>
+    </div>
+    <canvas id="idCanvas" style="width:100%;border:1px solid var(--border);margin-top:0.8rem;display:none;"></canvas>
+    <div style="margin-top:0.8rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn-primary" onclick="generateIdCard()">Generate Card</button>
+      <button class="btn-secondary" id="idDownloadBtn" onclick="downloadIdCard()" style="display:none;">⬇ Download</button>
     </div>
   </div>
 </div>
@@ -1445,8 +1489,7 @@
     }
 
     // Update login button label
-    const headerBtn = document.getElementById('headerAccountBtn');
-    if (headerBtn) headerBtn.textContent = currentUser ? `👤 ${currentUser.username}` : '👤 Log in';
+    syncHeaderAccountBtn();
   }
 
   // ── RENDER ARCHIVE ────────────────────────────────────────
@@ -1628,6 +1671,61 @@
   function simpleHash(str) { let h=0; for(let i=0;i<str.length;i++) h=Math.imul(31,h)+str.charCodeAt(i)|0; return h.toString(36); }
   function loadCurrentUser() { try { const s=localStorage.getItem('cotd_user'); if(s) currentUser=JSON.parse(s); } catch { currentUser=null; } }
   function saveCurrentUser(u) { currentUser=u; if(u) localStorage.setItem('cotd_user',JSON.stringify(u)); else localStorage.removeItem('cotd_user'); }
+
+  // Check on every load that the locally-stored account still exists in Firestore.
+  // If it was deleted by the owner, force a silent logout so they can't keep posting.
+  async function validateSession() {
+    if(!currentUser) return;
+    try {
+      const snap=await getDoc(doc(db,'users',currentUser.username));
+      if(!snap.exists()) {
+        // Account was deleted — wipe local session silently
+        saveCurrentUser(null);
+        currentUser=null;
+        syncHeaderAccountBtn();
+        checkIfOwner();
+        updateCommentUI();
+      }
+    } catch(e) {
+      // Network error — don't log out on uncertainty, just skip
+    }
+  }
+
+  // Re-check session before any write action (comment / reply).
+  // Returns true if the session is still valid, false if the user was deleted.
+  async function assertValidSession() {
+    if(!currentUser) return false;
+    try {
+      const snap=await getDoc(doc(db,'users',currentUser.username));
+      if(!snap.exists()) {
+        saveCurrentUser(null); currentUser=null;
+        syncHeaderAccountBtn(); checkIfOwner(); updateCommentUI();
+        alert('Your account no longer exists. Please register again.');
+        return false;
+      }
+    } catch { /* network error — allow the action to proceed */ }
+    return true;
+  }
+
+  function syncHeaderAccountBtn() {
+    const btn=document.getElementById('headerAccountBtn');
+    const idBtn=document.getElementById('idCardBtn');
+    if(!btn) return;
+    if(currentUser) {
+      const display=currentUser.displayName||currentUser.username;
+      btn.textContent=`👤 ${display}`;
+      if(idBtn) idBtn.style.display='';
+    } else {
+      btn.textContent='👤 Log in';
+      if(idBtn) idBtn.style.display='none';
+    }
+  }
+
+  function openAccountOrManage() {
+    if(currentUser) openManage();
+    else openAccount();
+  }
+
   function openAccount() {
     acctMode='register'; syncAccountUI();
     document.getElementById('accountOverlay').classList.add('open'); document.body.style.overflow='hidden';
@@ -1660,9 +1758,8 @@
         const snap=await getDoc(doc(db,'users',username));
         if(snap.exists()){errEl.textContent='Username already taken.';return;}
         const hash=simpleHash(password);
-        await setDoc(doc(db,'users',username),{username,hash,createdAt:new Date().toISOString()});
-        saveCurrentUser({username,hash}); closeAccount(); updateCommentUI(); checkIfOwner();
-        const btn=document.getElementById('headerAccountBtn'); if(btn) btn.textContent=`👤 ${username}`;
+        await setDoc(doc(db,'users',username),{username,hash,createdAt:new Date().toISOString(),displayName:''});
+        saveCurrentUser({username,hash,displayName:''}); closeAccount(); updateCommentUI(); checkIfOwner(); syncHeaderAccountBtn();
       } catch { errEl.textContent='Error registering. Try again.'; }
     } else {
       try {
@@ -1670,14 +1767,178 @@
         if(!snap.exists()){errEl.textContent='Account not found.';return;}
         const hash=simpleHash(password);
         if(snap.data().hash!==hash){errEl.textContent='Incorrect password.';return;}
-        saveCurrentUser({username,hash}); closeAccount(); updateCommentUI(); checkIfOwner();
-        const btn=document.getElementById('headerAccountBtn'); if(btn) btn.textContent=`👤 ${username}`;
+        // Load displayName from Firestore on login
+        const displayName=snap.data().displayName||'';
+        saveCurrentUser({username,hash,displayName}); closeAccount(); updateCommentUI(); checkIfOwner(); syncHeaderAccountBtn();
       } catch { errEl.textContent='Error logging in. Try again.'; }
     }
   }
+
+  // ── MANAGE ACCOUNT MODAL ──────────────────────────────────
+  function openManage() {
+    if(!currentUser) return;
+    document.getElementById('manageUserSub').textContent=`@${currentUser.username}`;
+    document.getElementById('manageDisplayName').value=currentUser.displayName||'';
+    document.getElementById('manageMsg').textContent='';
+    document.getElementById('manageOverlay').classList.add('open'); document.body.style.overflow='hidden';
+    setTimeout(()=>document.getElementById('manageDisplayName').focus(),50);
+  }
+  function closeManage() { document.getElementById('manageOverlay').classList.remove('open'); document.body.style.overflow=''; }
+
+  async function saveDisplayName() {
+    if(!currentUser) return;
+    const name=(document.getElementById('manageDisplayName').value||'').trim().slice(0,40);
+    const msgEl=document.getElementById('manageMsg'); msgEl.textContent='';
+    try {
+      await setDoc(doc(db,'users',currentUser.username),{displayName:name},{merge:true});
+      currentUser.displayName=name; saveCurrentUser(currentUser);
+      syncHeaderAccountBtn();
+      msgEl.style.color='var(--green)'; msgEl.textContent='✓ Display name saved!';
+      setTimeout(()=>msgEl.textContent='',2000);
+      // Refresh comments so new name shows immediately
+      if(window._heroCommentKey) renderComments(window._heroCommentKey);
+    } catch { msgEl.style.color='var(--rust)'; msgEl.textContent='Error saving. Try again.'; }
+  }
+
+  function logoutFromManage() {
+    closeManage(); logout();
+  }
+
   function logout() {
-    saveCurrentUser(null); updateCommentUI(); checkIfOwner();
-    const btn=document.getElementById('headerAccountBtn'); if(btn) btn.textContent='👤 Log in';
+    saveCurrentUser(null); updateCommentUI(); checkIfOwner(); syncHeaderAccountBtn();
+  }
+
+  // ── ID CARD ───────────────────────────────────────────────
+  let _idPhotoData=null;
+
+  function openIdCard() {
+    if(!currentUser) { openAccount(); return; }
+    closeManage();
+    document.getElementById('idCardOverlay').classList.add('open'); document.body.style.overflow='hidden';
+    document.getElementById('idCanvas').style.display='none';
+    document.getElementById('idDownloadBtn').style.display='none';
+    document.getElementById('idPhotoPreview').style.display='none';
+    _idPhotoData=null;
+  }
+  function closeIdCard() { document.getElementById('idCardOverlay').classList.remove('open'); document.body.style.overflow=''; }
+
+  function handleIdPhoto(e) {
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      _idPhotoData=ev.target.result;
+      const prev=document.getElementById('idPhotoPreview'); prev.src=_idPhotoData; prev.style.display='block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function generateIdCard() {
+    if(!currentUser){return;}
+    const canvas=document.getElementById('idCanvas');
+    const W=480, H=280; canvas.width=W; canvas.height=H; canvas.style.display='block';
+
+    const ctx=canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle='#1a1209'; ctx.fillRect(0,0,W,H);
+
+    // Gold border
+    ctx.strokeStyle='#c9a84c'; ctx.lineWidth=3; ctx.strokeRect(2,2,W-4,H-4);
+
+    // Diagonal stripe accent (subtle)
+    ctx.save(); ctx.globalAlpha=0.06; ctx.fillStyle='#c9a84c';
+    for(let i=-H;i<W;i+=30){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+H,H);ctx.lineTo(i+H+10,H);ctx.lineTo(i+10,0);ctx.fill();}
+    ctx.restore();
+
+    // Header bar
+    ctx.fillStyle='#c9a84c'; ctx.fillRect(0,0,W,44);
+    ctx.fillStyle='#1a1209'; ctx.font='bold 11px monospace'; ctx.letterSpacing='4px';
+    ctx.fillText('CALVO OF THE DAY · MEMBER CARD', 18, 27);
+    ctx.font='11px monospace'; ctx.textAlign='right'; ctx.fillText('COTD', W-18, 27); ctx.textAlign='left';
+
+    // Photo area
+    const photoX=20, photoY=60, photoSize=130;
+    ctx.fillStyle='#2a2218'; ctx.fillRect(photoX,photoY,photoSize,photoSize);
+    ctx.strokeStyle='#c9a84c'; ctx.lineWidth=1.5; ctx.strokeRect(photoX,photoY,photoSize,photoSize);
+
+    // Load member stats from Firestore
+    let commentCount=0, ratingCount=0;
+    try {
+      const allArchive=await loadAllArchive();
+      await Promise.all(allArchive.map(async a=>{
+        const key=a.date?a.date.replace(/[:.]/g,'-'):null; if(!key) return;
+        const q=query(collection(db,'comments',key,'items'));
+        const snap=await getDocs(q);
+        snap.docs.forEach(d=>{ if(d.data().username===currentUser.username) commentCount++; });
+        const ratingData=await loadRatings(key);
+        if((ratingData.voters||{})[getUserId()]) ratingCount++;
+      }));
+    } catch {}
+
+    const displayName=currentUser.displayName||currentUser.username;
+
+    const drawCard=()=>{
+      // Display name
+      ctx.fillStyle='#e8c96f'; ctx.font='bold 22px serif';
+      ctx.fillText(truncate(ctx,displayName,W-200-30,'bold 22px serif'), 170, 85);
+
+      // Username
+      ctx.fillStyle='#8a7060'; ctx.font='12px monospace';
+      ctx.fillText(`@${currentUser.username}`, 170, 105);
+
+      // Divider
+      ctx.strokeStyle='#3a2e24'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(170,115); ctx.lineTo(W-20,115); ctx.stroke();
+
+      // Stats
+      const stats=[
+        {label:'COMMENTS', value:commentCount},
+        {label:'CALVOS RATED', value:ratingCount},
+        {label:'SHINE LEVEL', value:commentCount>=250?'MAX':commentCount>=100?'HIGH':commentCount>=25?'MID':'LOW'},
+      ];
+      stats.forEach((s,i)=>{
+        const sx=170+(i*(Math.floor((W-190)/3)));
+        ctx.fillStyle='#c9a84c'; ctx.font='bold 18px serif'; ctx.fillText(String(s.value), sx, 148);
+        ctx.fillStyle='#8a7060'; ctx.font='9px monospace'; ctx.fillText(s.label, sx, 162);
+      });
+
+      // Member since (from createdAt)
+      ctx.fillStyle='#8a7060'; ctx.font='10px monospace'; ctx.fillText(`MEMBER SINCE — ${new Date().getFullYear()}`, 170, 185);
+
+      // Barcode-ish decoration
+      ctx.fillStyle='#c9a84c';
+      let bx=170; const bY=200;
+      for(let j=0;j<28;j++){const w=(j%3===0)?4:(j%5===0)?1:2; ctx.fillRect(bx,bY,w,18); bx+=w+1;}
+
+      // Footer
+      ctx.fillStyle='#3a2e24'; ctx.fillRect(0,H-28,W,28);
+      ctx.fillStyle='#8a7060'; ctx.font='9px monospace';
+      ctx.fillText('CALVO OF THE DAY  ·  EVERY SCALP TELLS A STORY', 18, H-10);
+      ctx.textAlign='right'; ctx.fillText('cotd', W-18, H-10); ctx.textAlign='left';
+    };
+
+    if(_idPhotoData){
+      const img=new Image(); img.onload=()=>{
+        // Draw photo with cover crop
+        const side=Math.min(img.width,img.height);
+        const sx=(img.width-side)/2, sy=(img.height-side)/2;
+        ctx.drawImage(img,sx,sy,side,side,photoX,photoY,photoSize,photoSize);
+        ctx.strokeStyle='#c9a84c'; ctx.lineWidth=1.5; ctx.strokeRect(photoX,photoY,photoSize,photoSize);
+        drawCard(); document.getElementById('idDownloadBtn').style.display='';
+      };
+      img.src=_idPhotoData;
+    } else {
+      // Placeholder emoji
+      ctx.fillStyle='#3a2e24'; ctx.fillRect(photoX,photoY,photoSize,photoSize);
+      ctx.font='52px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('🔆',photoX+photoSize/2, photoY+photoSize/2+18); ctx.textAlign='left';
+      drawCard(); document.getElementById('idDownloadBtn').style.display='';
+    }
+  }
+
+  function downloadIdCard() {
+    const canvas=document.getElementById('idCanvas');
+    const name=(currentUser?.username||'calvo').toLowerCase().replace(/\s+/g,'-');
+    const link=document.createElement('a'); link.download=`calvo-id-${name}.png`; link.href=canvas.toDataURL('image/png'); link.click();
   }
 
   // ── COMMENT RANKS ─────────────────────────────────────────
@@ -1712,6 +1973,7 @@
 
   async function postComment(key, text) {
     if(!currentUser||!text.trim()||!key) return;
+    const valid=await assertValidSession(); if(!valid) return;
     const id=Date.now().toString(36)+Math.random().toString(36).slice(2);
     await setDoc(doc(db,'comments',key,'items',id),{ username:currentUser.username, text:text.trim().slice(0,120), createdAt:new Date().toISOString() });
     await renderComments(key);
@@ -1723,6 +1985,7 @@
 
   async function postReply(key, commentId, context) {
     if(!currentUser) return;
+    const valid=await assertValidSession(); if(!valid) return;
     const inputId = context==='modal' ? `reply-input-modal-${commentId}` : `reply-input-${commentId}`;
     const input = document.getElementById(inputId);
     const text = (input?.value||'').trim();
@@ -1750,13 +2013,17 @@
     const replies=await loadReplies(key,commentId);
     const isOwner=isOwnerUser()&&ownerAuthed;
     const replyPrefix=context==='modal'?'m-':'';
+    const replyUsernames=[...new Set(replies.map(r=>r.username))];
+    const replyDisplayNames=await fetchDisplayNames(replyUsernames);
     const repliesHtml=replies.map(r=>{
       const d=new Date(r.createdAt);
       const timeStr=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       const isOwn=currentUser&&currentUser.username===r.username;
       const showDel=isOwner||isOwn;
-      const delBtn=showDel?`<button class="reply-delete" style="display:block;" onclick="deleteReply('${key}','${commentId}','${r.id}','${context}')">✕</button>`:'';
-      return `<div class="reply-item">${delBtn}<div class="reply-author">${escHtml(r.username)}</div><div class="reply-text">${escHtml(r.text)}</div><div class="reply-time">${timeStr}</div></div>`;
+      const delBtn=showDel?`<button class="reply-delete" style="display:block;" onclick="deleteReply('${key}','${commentId}','${r.id}','${context}')">\u2715</button>`:'';
+      const rDN=replyDisplayNames[r.username]||'';
+      const authorHtml=rDN?`<span style="font-weight:500;">${escHtml(rDN)}</span> <span style="color:var(--muted);font-weight:400;">@${escHtml(r.username)}</span>`:escHtml(r.username);
+      return `<div class="reply-item">${delBtn}<div class="reply-author">${authorHtml}</div><div class="reply-text">${escHtml(r.text)}</div><div class="reply-time">${timeStr}</div></div>`;
     }).join('');
     const inputHtml=currentUser
       ?`<div class="reply-input-row"><input class="reply-input" id="reply-input-${replyPrefix}${commentId}" placeholder="Reply…" maxlength="100" onkeydown="if(event.key==='Enter'){postReply('${key}','${commentId}','${context}');}" /><button class="reply-submit" onclick="postReply('${key}','${commentId}','${context}')">Post</button></div>`
@@ -1779,7 +2046,7 @@
     document.getElementById(`reply-input-${prefix}${commentId}`)?.focus();
   }
 
-  function buildCommentHtml(c, key, context, userRating, counts, isOwner) {
+  function buildCommentHtml(c, key, context, userRating, counts, isOwner, displayNames) {
     const d=new Date(c.createdAt);
     const timeStr=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     const rank=getCommentRank(counts[c.username]||0);
@@ -1788,14 +2055,28 @@
     const prefix=context==='modal'?'m-':'';
     const showDel=isOwner||isOwn;
     const delBtn=showDel?`<button class="comment-delete" style="display:block;" onclick="${isOwn&&!isOwner?(context==='modal'?`deleteOwnCommentModal`:`deleteOwnComment`):`ownerDeleteComment`}('${key}','${c.id}')">✕</button>`:'';
+    // Twitter-style: DisplayName @username
+    const displayName=(displayNames&&displayNames[c.username])||'';
+    const authorHtml=displayName
+      ? `<span style="font-weight:500;">${escHtml(displayName)}</span> <span style="color:var(--muted);font-weight:400;">@${escHtml(c.username)}</span>${badge}`
+      : `${escHtml(c.username)}${badge}`;
     return `<div class="comment-item">
       ${delBtn}
-      <div class="comment-author">${escHtml(c.username)}${badge}</div>
+      <div class="comment-author">${authorHtml}</div>
       <div class="comment-text">${escHtml(c.text)}</div>
       <div class="comment-time">${timeStr}</div>
       <button class="reply-toggle-btn" id="reply-btn-${prefix}${c.id}" onclick="toggleReplies('${key}','${c.id}',this,'${context}')">↩ Reply</button>
       <div class="replies-container" id="replies-${prefix}${c.id}"></div>
     </div>`;
+  }
+
+  async function fetchDisplayNames(usernames) {
+    const names={};
+    await Promise.all(usernames.map(async u=>{
+      try { const snap=await getDoc(doc(db,'users',u)); if(snap.exists()) names[u]=snap.data().displayName||''; }
+      catch {}
+    }));
+    return names;
   }
 
   async function renderComments(key) {
@@ -1804,9 +2085,11 @@
     const isOwner=isOwnerUser()&&ownerAuthed;
     if(!comments.length) { list.innerHTML=`<div class="comment-empty">No comments yet. Be the first! 🔆</div>`; return; }
     const usernames=[...new Set(comments.map(c=>c.username))];
-    const counts={}; await Promise.all(usernames.map(async u=>{counts[u]=await getCommentCount(u);}));
-    list.innerHTML=comments.map(c=>buildCommentHtml(c,key,'hero',null,counts,isOwner)).join('');
-    // Pre-load reply counts on toggle buttons
+    const [counts, displayNames]=await Promise.all([
+      (async()=>{ const c={}; await Promise.all(usernames.map(async u=>{c[u]=await getCommentCount(u);})); return c; })(),
+      fetchDisplayNames(usernames)
+    ]);
+    list.innerHTML=comments.map(c=>buildCommentHtml(c,key,'hero',null,counts,isOwner,displayNames)).join('');
     await Promise.all(comments.map(async c=>{
       const replies=await loadReplies(key,c.id);
       const btn=document.getElementById(`reply-btn-${c.id}`);
@@ -1820,8 +2103,11 @@
     const isOwner=isOwnerUser()&&ownerAuthed;
     if(!comments.length){list.innerHTML=`<div class="comment-empty">No comments on this calvo.</div>`;return;}
     const usernames=[...new Set(comments.map(c=>c.username))];
-    const counts={}; await Promise.all(usernames.map(async u=>{counts[u]=await getCommentCount(u);}));
-    list.innerHTML=comments.map(c=>buildCommentHtml(c,key,'modal',null,counts,isOwner)).join('');
+    const [counts, displayNames]=await Promise.all([
+      (async()=>{ const c={}; await Promise.all(usernames.map(async u=>{c[u]=await getCommentCount(u);})); return c; })(),
+      fetchDisplayNames(usernames)
+    ]);
+    list.innerHTML=comments.map(c=>buildCommentHtml(c,key,'modal',null,counts,isOwner,displayNames)).join('');
     await Promise.all(comments.map(async c=>{
       const replies=await loadReplies(key,c.id);
       const btn=document.getElementById(`reply-btn-m-${c.id}`);
@@ -1837,7 +2123,8 @@
     const tagEl=document.getElementById('commentUserTag');
     if(!inputArea) return;
     if(currentUser){
-      tagEl.innerHTML=`<span style="color:var(--rust);font-size:0.6rem;">${escHtml(currentUser.username)}</span> <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.55rem;cursor:pointer;text-decoration:underline;padding:0;">log out</button>`;
+      const display=currentUser.displayName||currentUser.username;
+      tagEl.innerHTML=`<span style="color:var(--rust);font-size:0.6rem;">${escHtml(display)} <span style="color:var(--muted);font-weight:400;">@${escHtml(currentUser.username)}</span></span> <button onclick="openManage()" style="background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.55rem;cursor:pointer;text-decoration:underline;padding:0;margin-left:0.3rem;">manage</button>`;
       inputArea.innerHTML=`<div class="comment-input-row"><input class="comment-input" id="commentInput" placeholder="Add a comment…" maxlength="120" onkeydown="if(event.key==='Enter'){postComment(window._heroCommentKey,this.value);this.value='';}" /><button class="comment-submit" onclick="const i=document.getElementById('commentInput');postComment(window._heroCommentKey,i.value);i.value='';">Post</button></div>`;
     } else {
       tagEl.textContent='';
@@ -1927,10 +2214,42 @@
   }
   async function ownerDeleteAccount(username) {
     if(!ownerAuthed) return;
-    if(!confirm(`Delete account "${username}"? This cannot be undone.`)) return;
+    if(!confirm(`Delete account "${username}"? This will also delete ALL their comments. Cannot be undone.`)) return;
+
+    // Delete all comments (and their replies) made by this user across all calvos
+    try {
+      const allArchive=await loadAllArchive();
+      await Promise.all(allArchive.map(async a=>{
+        const key=a.date?a.date.replace(/[:.]/g,'-'):null; if(!key) return;
+        const q=query(collection(db,'comments',key,'items'));
+        const snap=await getDocs(q);
+        await Promise.all(snap.docs.map(async d=>{
+          if(d.data().username===username){
+            // Delete all replies first
+            const rq=query(collection(db,'comments',key,'items',d.id,'replies'));
+            const rsnap=await getDocs(rq);
+            await Promise.all(rsnap.docs.map(r=>deleteDoc(doc(db,'comments',key,'items',d.id,'replies',r.id))));
+            // Then delete the comment itself
+            await deleteDoc(doc(db,'comments',key,'items',d.id));
+          }
+        }));
+      }));
+    } catch(e){console.error('Error deleting user comments:',e);}
+
+    // Delete the user account doc
     await deleteDoc(doc(db,'users',username));
+
+    // Bust comment count cache for this user
+    delete _commentCountCache[username];
+
+    // Force logout if this user is currently logged in
     if(currentUser&&currentUser.username===username) logout();
+
     await loadOwnerAccounts();
+
+    // Refresh visible comment lists
+    if(window._heroCommentKey) renderComments(window._heroCommentKey);
+    if(document.getElementById('calvoOverlay').classList.contains('open')&&window._currentModalKey) renderModalComments(window._currentModalKey);
   }
 
   // ── SUGGESTION BOX ────────────────────────────────────────
@@ -2060,6 +2379,9 @@
   window.openAnnModal=openAnnModal; window.closeAnnModal=closeAnnModal; window.saveAnnouncement=saveAnnouncement; window.clearAnnouncement=clearAnnouncement;
   window.subscribeEmail=subscribeEmail; window.openAccount=openAccount; window.closeAccount=closeAccount;
   window.toggleAccountMode=toggleAccountMode; window.submitAccount=submitAccount; window.logout=logout;
+  window.openAccountOrManage=openAccountOrManage;
+  window.openManage=openManage; window.closeManage=closeManage; window.saveDisplayName=saveDisplayName; window.logoutFromManage=logoutFromManage;
+  window.openIdCard=openIdCard; window.closeIdCard=closeIdCard; window.generateIdCard=generateIdCard; window.downloadIdCard=downloadIdCard; window.handleIdPhoto=handleIdPhoto;
   window.postComment=postComment; window.deleteComment=deleteComment; window.deleteOwnComment=deleteOwnComment; window.deleteOwnCommentModal=deleteOwnCommentModal;
   window.renderModalComments=renderModalComments; window.deleteCurrentCalvo=deleteCurrentCalvo;
   window.handleImageUpload=handleImageUpload;
@@ -2072,7 +2394,8 @@
   };
 
   // ── INIT ──────────────────────────────────────────────────
-  loadCurrentUser(); checkIfOwner(); renderDate(); applyTranslations();
+  loadCurrentUser(); checkIfOwner(); syncHeaderAccountBtn(); renderDate(); applyTranslations();
+  validateSession().then(()=>{ checkIfOwner(); syncHeaderAccountBtn(); updateCommentUI(); });
   await renderHero();
   await renderCOTW();
   _cotwWinnerKeys=null;
@@ -2087,7 +2410,7 @@
   initShineHover('heroShineStars'); initShineHover('modalShineStars');
 
   document.addEventListener('keydown', e => {
-    if(e.key==='Escape'){closeCalvoModal();closeAnnModal();closeShareModal();closeCouncil();closeCalvle();closeAccount();closeOwnerPanel();}
+    if(e.key==='Escape'){closeCalvoModal();closeAnnModal();closeShareModal();closeCouncil();closeCalvle();closeAccount();closeOwnerPanel();closeManage();closeIdCard();}
   });
 </script>
 </body>
