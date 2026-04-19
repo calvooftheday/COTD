@@ -1909,11 +1909,7 @@
       let bx=170; const bY=200;
       for(let j=0;j<28;j++){const w=(j%3===0)?4:(j%5===0)?1:2; ctx.fillRect(bx,bY,w,18); bx+=w+1;}
 
-      // Footer
-      ctx.fillStyle='#3a2e24'; ctx.fillRect(0,H-28,W,28);
-      ctx.fillStyle='#8a7060'; ctx.font='9px monospace';
-      ctx.fillText('CALVO OF THE DAY  ·  EVERY SCALP TELLS A STORY', 18, H-10);
-      ctx.textAlign='right'; ctx.fillText('cotd', W-18, H-10); ctx.textAlign='left';
+
     };
 
     if(_idPhotoData){
